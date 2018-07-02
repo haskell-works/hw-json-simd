@@ -1,6 +1,8 @@
 module Main where
 
-import Lib
+import HaskellWorks.Data.Json.Simd
+
+import qualified System.IO as IO
 
 main :: IO ()
-main = someFunc
+main = IO.putStrLn "Hello World"
