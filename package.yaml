@@ -7,6 +7,8 @@ maintainer:          "example@example.com"
 copyright:           "2018 Author name here"
 
 extra-source-files:
+- src/cbits/font_load.h
+- src/cbits/font_load.c
 - README.md
 - ChangeLog.md
 
@@ -25,6 +27,10 @@ dependencies:
 library:
   build-tools:
   - c2hs
+  c-sources:
+  - cbits/simd.c
+  include-dirs:
+  - cbits
   source-dirs: src
 
 executables:
