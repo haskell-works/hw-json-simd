@@ -1,6 +1,3 @@
-// Copyright (C) John Ky 2018
-// Copyright (C) Gabriel Gonzales 2017-2018
-
 #include "simd.h"
 
 #include <stdio.h>

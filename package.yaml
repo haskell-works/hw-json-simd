@@ -23,6 +23,11 @@ description:         Please see the README on GitHub at <https://github.com/hask
 
 dependencies:
 - base >= 4.7 && < 5
+- binary
+- bytestring
+- parallel
+- mmap
+- vector
 
 library:
   build-tools:
