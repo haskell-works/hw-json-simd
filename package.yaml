@@ -7,8 +7,8 @@ maintainer:          "newhoggy@gmail.com"
 copyright:           "2018 John Ky"
 
 extra-source-files:
-- src/cbits/font_load.h
-- src/cbits/font_load.c
+- cbits/simd.h
+- cbits/simd.c
 - README.md
 - ChangeLog.md
 
