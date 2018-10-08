@@ -17,9 +17,10 @@ void moo ()
 void run(char *in, size_t len, unsigned char *tBytes, char *out) {
   unsigned char a, b, c, d, e, f, g;
   int i, j;
-  v16si s = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-  v16si s0, s1, s2, s3, s4, s5;
-  v16si t[256];
+  v16si si = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+  __m128i s = (__m128i)si;
+  __m128i s0, s1, s2, s3, s4, s5;
+  __m128i t[256];
 
   for (i = 0; i < 256; i++) {
     for (j = 0; j < 16; j++) {
