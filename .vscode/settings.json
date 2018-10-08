@@ -1,0 +1,9 @@
+{
+  "files.associations": {
+    "*.chs": "haskell",
+    "cstddef": "c",
+    "__functional_03": "c",
+    "functional": "c",
+    "__locale": "c"
+  }
+}

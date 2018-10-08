@@ -15,6 +15,8 @@ module HaskellWorks.Data.Json.Simd.Fsm.Core
 
 import Data.Binary     (Binary (..))
 import Data.ByteString (ByteString)
+import Data.Monoid     (Monoid (..))
+import Data.Semigroup  (Semigroup (..))
 import Data.Vector     ((!))
 import Data.Word       (Word8)
 import Foreign         (Ptr)
@@ -53,6 +55,9 @@ numberOfStates :: Int
 numberOfStates = fromEnum (maxBound :: State) + 1
 
 newtype Transition = Transition { runTransition :: State -> State }
+
+instance Semigroup Transition where
+  Transition f <> Transition g = Transition (g . f)
 
 instance Monoid Transition where
   mempty = Transition id
