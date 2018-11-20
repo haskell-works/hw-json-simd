@@ -9,6 +9,7 @@ copyright:           "2018 John Ky"
 extra-source-files:
 - cbits/simd.h
 - cbits/simd.c
+- cbits/simd-spliced.c
 - README.md
 - ChangeLog.md
 
@@ -21,10 +22,16 @@ extra-source-files:
 # common to point users to the README.md file.
 description:         Please see the README on GitHub at <https://github.com/haskell-works/hw-json-simd#readme>
 
+ghc-options: -Wall
+
 dependencies:
 - base >= 4.7 && < 5
 - binary
+- bits-extra
 - bytestring
+- hw-bits
+- hw-prim
+- lens
 - parallel
 - mmap
 - vector
@@ -33,11 +40,12 @@ library:
   build-tools:
   - c2hs
   c-sources:
+  - cbits/simd-spliced.c
   - cbits/simd.c
   include-dirs:
   - cbits
   source-dirs: src
-  cc-options: -mssse3 -O3
+  cc-options: -mssse3 -O3 -mlzcnt -mbmi2 -mavx2
 
 executables:
   hw-json-simd-exe:
@@ -49,6 +57,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - hw-json-simd
+    - optparse-applicative
 
 tests:
   hw-json-simd-test:
