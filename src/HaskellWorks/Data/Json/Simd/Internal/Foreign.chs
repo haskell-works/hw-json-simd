@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module HaskellWorks.Data.Json.Simd.Foreign where
+module HaskellWorks.Data.Json.Simd.Internal.Foreign where
 
 import Foreign
 import Foreign.C.Types (CChar(..), CSize(..))
