@@ -29,6 +29,16 @@ data WorkState = WorkState
   , workStateP :: !(ForeignPtr Word8)
   }
 
+data BpState = BpState
+  { bpStateD   :: Word8
+  , bpStateA   :: Word8
+  , bpStateZ   :: Word8
+  , bpStateLen :: Int
+  }
+
+emptyBpState :: BpState
+emptyBpState = BpState 0 0 0 0
+
 allocWorkBuffers :: Int -> IO WorkBuffers
 allocWorkBuffers n = do
   fptr <- F.mallocForeignPtrBytes (6 * n)

@@ -1,12 +1,19 @@
 module HaskellWorks.Data.Json.Simd.Index.Simple
   ( makeIbs
+  , ibsToIndexBuilders
   ) where
 
+import Control.Monad.ST
+import Control.Monad.ST.Unsafe
+import Data.Word
 import HaskellWorks.Data.Json.Simd.Internal.Index.Simple
 
 import qualified Data.ByteString                              as BS
+import qualified Data.ByteString.Builder                      as B
 import qualified Data.ByteString.Internal                     as BSI
 import qualified Data.ByteString.Lazy                         as LBS
+import qualified Data.Vector.Storable                         as DVS
+import qualified Data.Vector.Storable.Mutable                 as DVSM
 import qualified Foreign.ForeignPtr                           as F
 import qualified Foreign.ForeignPtr.Unsafe                    as F
 import qualified Foreign.Marshal.Unsafe                       as F
@@ -57,3 +64,20 @@ makeIbs lbs = F.unsafeLocalState $ do
                 )
           rs <- IO.unsafeInterleaveIO $ go wb ws bss
           return (r:rs)
+
+ibsToIndexBuilders :: ()
+  => [(BS.ByteString, BS.ByteString, BS.ByteString)]
+  -> [(B.Builder, B.Builder)]
+ibsToIndexBuilders = go emptyBpState
+  where go :: ()
+          => BpState
+          -> [(BS.ByteString, BS.ByteString, BS.ByteString)]
+          -> [(B.Builder, B.Builder)]
+        go s ((is, as, zs):ibs) =
+          let (s', ib, bp) = mkIndex s' is as zs
+              rs =  go s' ibs
+          in (ib, bp):rs
+        go s []                 = []
+        mkIndex :: BpState -> BS.ByteString -> BS.ByteString -> BS.ByteString -> (BpState, B.Builder, B.Builder)
+        mkIndex s is as zs = undefined
+
