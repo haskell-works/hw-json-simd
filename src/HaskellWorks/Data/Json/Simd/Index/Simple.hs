@@ -35,21 +35,21 @@ makeIndex lbs = F.unsafeLocalState $ do
           let (bsFptr, bsOff, bsLen) = BSI.toForeignPtr bs
           let bsPtr = F.castPtr (F.unsafeForeignPtrToPtr bsFptr)
           _ <- F.processChunk
-            (F.plusPtr bsPtr bsOff) --   => Ptr UInt8   --  in_buffer
-            (fromIntegral bsLen)    --   -> Size        --  in_length
-            (workBuffersD wb)       --   -> Ptr UInt8   --  work_bits_of_d
-            (workBuffersA wb)       --   -> Ptr UInt8   --  work_bits_of_a
-            (workBuffersZ wb)       --   -> Ptr UInt8   --  work_bits_of_z
-            (workBuffersQ wb)       --   -> Ptr UInt8   --  work_bits_of_q
-            (workBuffersB wb)       --   -> Ptr UInt8   --  work_bits_of_b
-            (workBuffersE wb)       --   -> Ptr UInt8   --  work_bits_of_e
-            (workStateZ ws)         --   -> Ptr Size    --  last_trailing_ones
-            (workStateO ws)         --   -> Ptr Size    --  quote_odds_carry
-            (workStateE ws)         --   -> Ptr Size    --  quote_evens_carry
-            (workStateM ws)         --   -> Ptr UInt64  --  quote_mask_carry
-            resIbPtr                --   -> Ptr UInt8   --  result_ibs
-            resAPtr                 --   -> Ptr UInt8   --  result_a
-            resBPtr                 --   -> Ptr UInt8   --  result_z
+            (F.plusPtr bsPtr bsOff) -- in_buffer:           Ptr UInt8
+            (fromIntegral bsLen)    -- in_length:           Size
+            (workBuffersD wb)       -- work_bits_of_d:      Ptr UInt8
+            (workBuffersA wb)       -- work_bits_of_a:      Ptr UInt8
+            (workBuffersZ wb)       -- work_bits_of_z:      Ptr UInt8
+            (workBuffersQ wb)       -- work_bits_of_q:      Ptr UInt8
+            (workBuffersB wb)       -- work_bits_of_b:      Ptr UInt8
+            (workBuffersE wb)       -- work_bits_of_e:      Ptr UInt8
+            (workStateZ ws)         -- last_trailing_ones:  Ptr Size
+            (workStateO ws)         -- quote_odds_carry:    Ptr Size
+            (workStateE ws)         -- quote_evens_carry:   Ptr Size
+            (workStateM ws)         -- quote_mask_carry:    Ptr UInt64
+            resIbPtr                -- result_ibs:          Ptr UInt8
+            resAPtr                 -- result_a:            Ptr UInt8
+            resBPtr                 -- result_z:            Ptr UInt8
           let r =
                 ( BSI.fromForeignPtr resIbFptr 0 resLen
                 , BSI.fromForeignPtr resAFptr  0 resLen
