@@ -1,3 +1,6 @@
 .stack-work/
 hw-json-simd.cabal
 *~
+
+*.json
+*.idx
