@@ -88,37 +88,57 @@ allocWorkBuffers n = do
     }
 
 allocWorkState :: IO WorkState
-allocWorkState = undefined
+allocWorkState = do
+  fptr <- F.mallocForeignPtrBytes 256
+  let ptr = F.unsafeForeignPtrToPtr fptr
+  return WorkState
+    { workStateZ = ptr `F.plusPtr` (8 * 0)
+    , workStateO = ptr `F.plusPtr` (8 * 1)
+    , workStateE = ptr `F.plusPtr` (8 * 2)
+    , workStateM = ptr `F.plusPtr` (8 * 3)
+    , workStateP = fptr
+    }
 
-makeIndex :: LBS.ByteString -> [(BS.ByteString, BS.ByteString)]
+makeIndex :: LBS.ByteString -> [(BS.ByteString, BS.ByteString, BS.ByteString)]
 makeIndex lbs = F.unsafeLocalState $ do
   wb <- allocWorkBuffers (32 * 1024 * 1204)
   ws <- allocWorkState
   IO.unsafeInterleaveIO $ go wb ws (LBS.toChunks lbs)
-  where go :: WorkBuffers -> WorkState -> [BS.ByteString] -> IO [(BS.ByteString, BS.ByteString)]
-        go wb ws []       = return [] -- TODO fill last bps
+  where go :: WorkBuffers -> WorkState -> [BS.ByteString] -> IO [(BS.ByteString, BS.ByteString, BS.ByteString)]
+        go wb ws []       = return []
         go wb ws (bs:bss) = do
           let resLen = BS.length bs `div` 8
-          resIb <- F.mallocForeignPtrBytes resLen
-          resA  <- F.mallocForeignPtrBytes resLen
-          resB  <- F.mallocForeignPtrBytes resLen
+          resIbFptr  <- F.mallocForeignPtrBytes resLen
+          resAFptr   <- F.mallocForeignPtrBytes resLen
+          resBFptr   <- F.mallocForeignPtrBytes resLen
+          let resIbPtr  = F.castPtr (F.unsafeForeignPtrToPtr resIbFptr)
+          let resAPtr   = F.castPtr (F.unsafeForeignPtrToPtr resAFptr )
+          let resBPtr   = F.castPtr (F.unsafeForeignPtrToPtr resBFptr )
+          let (bsFptr, bsOff, bsLen) = BSI.toForeignPtr bs
+          let bsPtr = F.castPtr (F.unsafeForeignPtrToPtr bsFptr)
           _ <- F.processChunk
-            undefined         --   => Ptr UInt8   --  in_buffer
-            undefined         --   -> Size        --  in_length
-            (workBuffersD wb) --   -> Ptr UInt8   --  work_bits_of_d
-            (workBuffersA wb) --   -> Ptr UInt8   --  work_bits_of_a
-            (workBuffersZ wb) --   -> Ptr UInt8   --  work_bits_of_z
-            (workBuffersQ wb) --   -> Ptr UInt8   --  work_bits_of_q
-            (workBuffersB wb) --   -> Ptr UInt8   --  work_bits_of_b
-            (workBuffersE wb) --   -> Ptr UInt8   --  work_bits_of_e
-            (workStateZ ws)   --   -> Ptr Size    --  last_trailing_ones
-            (workStateO ws)   --   -> Ptr Size    --  quote_odds_carry
-            (workStateE ws)   --   -> Ptr Size    --  quote_evens_carry
-            (workStateM ws)   --   -> Ptr UInt64  --  quote_mask_carry
-            undefined         --   -> Ptr UInt8   --  result_ibs
-            undefined         --   -> Ptr UInt8   --  result_a
-            undefined         --   -> Ptr UInt8   --  result_z
-          return undefined
+            (F.plusPtr bsPtr bsOff) --   => Ptr UInt8   --  in_buffer
+            (fromIntegral bsLen)    --   -> Size        --  in_length
+            (workBuffersD wb)       --   -> Ptr UInt8   --  work_bits_of_d
+            (workBuffersA wb)       --   -> Ptr UInt8   --  work_bits_of_a
+            (workBuffersZ wb)       --   -> Ptr UInt8   --  work_bits_of_z
+            (workBuffersQ wb)       --   -> Ptr UInt8   --  work_bits_of_q
+            (workBuffersB wb)       --   -> Ptr UInt8   --  work_bits_of_b
+            (workBuffersE wb)       --   -> Ptr UInt8   --  work_bits_of_e
+            (workStateZ ws)         --   -> Ptr Size    --  last_trailing_ones
+            (workStateO ws)         --   -> Ptr Size    --  quote_odds_carry
+            (workStateE ws)         --   -> Ptr Size    --  quote_evens_carry
+            (workStateM ws)         --   -> Ptr UInt64  --  quote_mask_carry
+            resIbPtr                --   -> Ptr UInt8   --  result_ibs
+            resAPtr                 --   -> Ptr UInt8   --  result_a
+            resBPtr                 --   -> Ptr UInt8   --  result_z
+          let r =
+                ( BSI.fromForeignPtr resIbFptr 0 resLen
+                , BSI.fromForeignPtr resAFptr  0 resLen
+                , BSI.fromForeignPtr resBFptr  0 resLen
+                )
+          rs <- IO.unsafeInterleaveIO $ go wb ws bss
+          return (r:rs)
 
 runCreateIndex :: CreateIndexOptions -> IO ()
 runCreateIndex opts = do
@@ -130,7 +150,7 @@ runCreateIndex opts = do
     let chunks = makeIndex contents
     IO.withFile outputIbFile IO.WriteMode $ \hIb -> do
       IO.withFile outputBpFile IO.WriteMode $ \hBp -> do
-        forM_ chunks $ \(ibBs, bpBs) -> do
+        forM_ chunks $ \(ibBs, bpBs, _) -> do -- TODO
           BS.hPut hIb ibBs
           BS.hPut hBp bpBs
 
