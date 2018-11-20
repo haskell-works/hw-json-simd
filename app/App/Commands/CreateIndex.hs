@@ -37,24 +37,6 @@ import qualified System.IO.Unsafe                    as IO
 {-# ANN module ("HLint: ignore Reduce duplication"  :: String) #-}
 {-# ANN module ("HLint: ignore Redundant do"        :: String) #-}
 
--- processChunk :: ()
---   => Ptr UInt8   --  in_buffer
---   -> Size        --  in_length
---   -> Ptr UInt8   --  work_bits_of_d
---   -> Ptr UInt8   --  work_bits_of_a
---   -> Ptr UInt8   --  work_bits_of_z
---   -> Ptr UInt8   --  work_bits_of_q
---   -> Ptr UInt8   --  work_bits_of_b
---   -> Ptr UInt8   --  work_bits_of_e
---   -> Ptr Size    --  last_trailing_ones
---   -> Ptr Size    --  quote_odds_carry
---   -> Ptr Size    --  quote_evens_carry
---   -> Ptr UInt64  --  quote_mask_carry
---   -> Ptr UInt8   --  result_ibs
---   -> Ptr UInt8   --  result_a
---   -> Ptr UInt8   --  result_z
---   -> IO UInt64
-
 data WorkBuffers = WorkBuffers
   { workBuffersP :: !(ForeignPtr F.UInt8)
   , workBuffersD :: !(Ptr F.UInt8)
