@@ -57,5 +57,3 @@ makeIndex lbs = F.unsafeLocalState $ do
                 )
           rs <- IO.unsafeInterleaveIO $ go wb ws bss
           return (r:rs)
-
-

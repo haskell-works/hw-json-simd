@@ -54,4 +54,3 @@ allocWorkState = do
     , workStateM = ptr `F.plusPtr` (8 * 3)
     , workStateP = fptr
     }
-
