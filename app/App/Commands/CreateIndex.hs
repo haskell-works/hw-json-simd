@@ -28,7 +28,7 @@ runCreateIndex opts = do
   let outputBpFile = opts ^. L.outputBpFile & fromMaybe (filePath <> ".bp.idx")
   IO.withFile filePath IO.ReadMode $ \hIn -> do
     contents <- LBS.resegmentPadded 512 <$> LBS.hGetContents hIn
-    let chunks = makeIndex contents
+    let chunks = makeIbs contents
     IO.withFile outputIbFile IO.WriteMode $ \hIb -> do
       IO.withFile outputBpFile IO.WriteMode $ \hBp -> do
         forM_ chunks $ \(ibBs, bpBs, _) -> do -- TODO

@@ -1,5 +1,5 @@
 module HaskellWorks.Data.Json.Simd.Index.Simple
-  ( makeIndex
+  ( makeIbs
   ) where
 
 import HaskellWorks.Data.Json.Simd.Internal.Index.Simple
@@ -17,8 +17,8 @@ import qualified System.IO.Unsafe                             as IO
 {-# ANN module ("HLint: ignore Reduce duplication"  :: String) #-}
 {-# ANN module ("HLint: ignore Redundant do"        :: String) #-}
 
-makeIndex :: LBS.ByteString -> [(BS.ByteString, BS.ByteString, BS.ByteString)]
-makeIndex lbs = F.unsafeLocalState $ do
+makeIbs :: LBS.ByteString -> [(BS.ByteString, BS.ByteString, BS.ByteString)]
+makeIbs lbs = F.unsafeLocalState $ do
   wb <- allocWorkBuffers (32 * 1024 * 1204)
   ws <- allocWorkState
   IO.unsafeInterleaveIO $ go wb ws (LBS.toChunks lbs)
