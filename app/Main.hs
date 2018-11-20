@@ -6,5 +6,4 @@ import qualified System.IO as IO
 
 main :: IO ()
 main = do
-  moo
   IO.putStrLn "Hello World"
