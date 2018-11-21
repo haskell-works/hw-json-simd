@@ -29,9 +29,15 @@ runCreateIndex opts = do
   IO.withFile filePath IO.ReadMode $ \hIn -> do
     contents <- LBS.resegmentPadded 512 <$> LBS.hGetContents hIn
     let chunks = makeIbs contents
+    -- IO.withFile outputIbFile IO.WriteMode $ \hIb -> do
+    --   IO.withFile outputBpFile IO.WriteMode $ \hBp -> do
+    --     forM_ chunks $ \(ibBs, bpBs, _) -> do -- TODO
+    --       BS.hPut hIb ibBs
+    --       BS.hPut hBp bpBs
+    let chunks2 = zip (fmap (\(a, _, _) -> a) chunks) (ibsToIndexByteStrings chunks)
     IO.withFile outputIbFile IO.WriteMode $ \hIb -> do
       IO.withFile outputBpFile IO.WriteMode $ \hBp -> do
-        forM_ chunks $ \(ibBs, bpBs, _) -> do -- TODO
+        forM_ chunks2 $ \(ibBs, bpBs) -> do -- TODO
           BS.hPut hIb ibBs
           BS.hPut hBp bpBs
 
