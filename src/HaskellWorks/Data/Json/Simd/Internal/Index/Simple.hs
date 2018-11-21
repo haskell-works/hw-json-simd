@@ -1,8 +1,14 @@
+{-# LANGUAGE GADTs      #-}
+{-# LANGUAGE RankNTypes #-}
+
 module HaskellWorks.Data.Json.Simd.Internal.Index.Simple where
 
+import Control.Monad.ST
 import Data.Word
 import Foreign
 
+import qualified Data.Vector.Storable                         as DVS
+import qualified Data.Vector.Storable.Mutable                 as DVSM
 import qualified Foreign.ForeignPtr                           as F
 import qualified Foreign.ForeignPtr.Unsafe                    as F
 import qualified Foreign.Ptr                                  as F
@@ -30,11 +36,19 @@ data WorkState = WorkState
   }
 
 data BpState = BpState
-  { bpStateD   :: Word8
-  , bpStateA   :: Word8
-  , bpStateZ   :: Word8
-  , bpStateLen :: Int
+  { bpStateD   :: Word64
+  , bpStateA   :: Word64
+  , bpStateZ   :: Word64
+  , bpStateLen :: Word64
   }
+
+data Step where
+  Step :: ( forall s
+            .   BpState
+            ->  DVSM.MVector s Word64
+            ->  ST s (BpState, Int))
+          -> Int
+          -> Step
 
 emptyBpState :: BpState
 emptyBpState = BpState 0 0 0 0

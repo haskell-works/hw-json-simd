@@ -27,7 +27,9 @@ ghc-options: -Wall
 dependencies:
 - base >= 4.7 && < 5
 - binary
+- bits-extra
 - bytestring
+- hw-bits
 - hw-prim
 - lens
 - parallel

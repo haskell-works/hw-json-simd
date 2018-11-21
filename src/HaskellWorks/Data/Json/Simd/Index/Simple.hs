@@ -1,15 +1,20 @@
+{-# LANGUAGE GADTs      #-}
+{-# LANGUAGE RankNTypes #-}
+
 module HaskellWorks.Data.Json.Simd.Index.Simple
   ( makeIbs
-  , ibsToIndexBuilders
+  , ibsToIndexByteStrings
   ) where
 
 import Control.Monad.ST
-import Control.Monad.ST.Unsafe
+import Data.Bits.Pdep
+import Data.Bits.Pext
 import Data.Word
+import HaskellWorks.Data.Bits.BitWise
+import HaskellWorks.Data.Bits.PopCount.PopCount1
 import HaskellWorks.Data.Json.Simd.Internal.Index.Simple
 
 import qualified Data.ByteString                              as BS
-import qualified Data.ByteString.Builder                      as B
 import qualified Data.ByteString.Internal                     as BSI
 import qualified Data.ByteString.Lazy                         as LBS
 import qualified Data.Vector.Storable                         as DVS
@@ -19,6 +24,7 @@ import qualified Foreign.ForeignPtr.Unsafe                    as F
 import qualified Foreign.Marshal.Unsafe                       as F
 import qualified Foreign.Ptr                                  as F
 import qualified HaskellWorks.Data.Json.Simd.Internal.Foreign as F
+import qualified HaskellWorks.Data.Vector.AsVector64          as DVS
 import qualified System.IO.Unsafe                             as IO
 
 {-# ANN module ("HLint: ignore Reduce duplication"  :: String) #-}
@@ -65,19 +71,81 @@ makeIbs lbs = F.unsafeLocalState $ do
           rs <- IO.unsafeInterleaveIO $ go wb ws bss
           return (r:rs)
 
-ibsToIndexBuilders :: ()
+ibsToIndexByteStrings :: ()
   => [(BS.ByteString, BS.ByteString, BS.ByteString)]
-  -> [(B.Builder, B.Builder)]
-ibsToIndexBuilders = go emptyBpState
+  -> [BS.ByteString]
+ibsToIndexByteStrings bits = go emptyBpState (fmap (\(a, b, c) -> mkIndexStep a b c) bits)
   where go :: ()
           => BpState
-          -> [(BS.ByteString, BS.ByteString, BS.ByteString)]
-          -> [(B.Builder, B.Builder)]
-        go s ((is, as, zs):ibs) =
-          let (s', ib, bp) = mkIndex s' is as zs
-              rs =  go s' ibs
-          in (ib, bp):rs
-        go s []                 = []
-        mkIndex :: BpState -> BS.ByteString -> BS.ByteString -> BS.ByteString -> (BpState, B.Builder, B.Builder)
-        mkIndex s is as zs = undefined
+          -> [Step]
+          -> [BS.ByteString]
+        go s (step:steps) = let (s', bp) = stepToByteString s step in bp:go s' steps
+        go _ []           = []
 
+mkIndexStep :: BS.ByteString -> BS.ByteString -> BS.ByteString -> Step
+mkIndexStep is as zs | isLen == asLen && asLen == zsLen = Step (go 0 0) isLen
+  where isLen = BS.length is
+        asLen = BS.length as
+        zsLen = BS.length zs
+        isv   = DVS.asVector64 is
+        asv   = DVS.asVector64 as
+        zsv   = DVS.asVector64 zs
+        len   = DVS.length isv
+        go  :: Int
+            -> Int
+            -> BpState
+            -> DVSM.MVector s Word64
+            -> ST s (BpState, Int)
+        go i bpsReady bpState bpvm | i < len = do
+          let w64_ib = DVS.unsafeIndex isv i
+          let w64_a  = DVS.unsafeIndex asv i
+          let w64_z  = DVS.unsafeIndex zsv i
+
+          let pc_ib = popCount1 w64_ib
+
+          let ext_d = pext (comp (w64_a .|. w64_z)) w64_ib :: Word64
+          let ext_a = pext w64_a                    w64_ib :: Word64
+          let ext_z = pext w64_z                    w64_ib :: Word64
+
+          let remainder_len = bpStateLen bpState
+
+          let remainder_bits_d = bpStateD bpState .|. (ext_d .<. bpStateLen bpState)
+          let remainder_bits_a = bpStateA bpState .|. (ext_a .<. bpStateLen bpState)
+          -- let remainder_bits_z = bpStateZ bpState .|. (ext_z .<. bpStateLen bpState)
+
+          if bpStateLen bpState + pc_ib >= 64
+            then do
+              -- Write full word
+              DVSM.write bpvm bpsReady $
+                pdep remainder_bits_a 0x5555555555555555 .|.
+                pdep remainder_bits_a 0xaaaaaaaaaaaaaaaa .|.
+                pdep remainder_bits_d 0xaaaaaaaaaaaaaaaa
+
+              DVSM.write bpvm (bpsReady + 1) $
+                pdep (remainder_bits_a .>. 32) 0x5555555555555555 .|.
+                pdep (remainder_bits_a .>. 32) 0xaaaaaaaaaaaaaaaa .|.
+                pdep (remainder_bits_d .>. 32) 0xaaaaaaaaaaaaaaaa
+
+              -- Set up for next iteration
+              let nextBpState = bpState
+                    { bpStateD    = ext_d .>. (64 - remainder_len)
+                    , bpStateA    = ext_a .>. (64 - remainder_len)
+                    , bpStateZ    = ext_z .>. (64 - remainder_len)
+                    , bpStateLen  = remainder_len + pc_ib - 64
+                    }
+              go (i + 1) (bpsReady + 2) nextBpState bpvm
+            else do
+              let nextBpState = bpState
+                    { bpStateLen  = remainder_len + pc_ib
+                    }
+              go (i + 1) bpsReady nextBpState bpvm
+        go i _ bpState _ = return (bpState, i)
+mkIndexStep _ _ _ = error "Mismatched input size"
+
+stepToByteString :: BpState -> Step -> (BpState, BS.ByteString)
+stepToByteString state (Step step size) = F.unsafeLocalState $ do
+  let bsSize = size * 8
+  bpFptr <- BSI.mallocByteString bsSize
+  let bpVm = DVSM.unsafeFromForeignPtr (F.castForeignPtr bpFptr) 0 size
+  (bpState2, _) <- stToIO $ step state bpVm
+  return (bpState2, BSI.PS bpFptr 0 size)
