@@ -4,3 +4,6 @@ hw-json-simd.cabal
 
 *.json
 *.idx
+*.o
+a.out
+

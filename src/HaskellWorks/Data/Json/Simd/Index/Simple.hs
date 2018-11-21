@@ -116,12 +116,12 @@ mkIndexStep is as zs | isLen == asLen && asLen == zsLen = Step (go 0 0) isLen
           if bpStateLen bpState + pc_ib >= 64
             then do
               -- Write full word
-              DVSM.write bpvm bpsReady $
+              DVSM.unsafeWrite bpvm bpsReady $
                 pdep remainder_bits_a 0x5555555555555555 .|.
                 pdep remainder_bits_a 0xaaaaaaaaaaaaaaaa .|.
                 pdep remainder_bits_d 0xaaaaaaaaaaaaaaaa
 
-              DVSM.write bpvm (bpsReady + 1) $
+              DVSM.unsafeWrite bpvm (bpsReady + 1) $
                 pdep (remainder_bits_a .>. 32) 0x5555555555555555 .|.
                 pdep (remainder_bits_a .>. 32) 0xaaaaaaaaaaaaaaaa .|.
                 pdep (remainder_bits_d .>. 32) 0xaaaaaaaaaaaaaaaa
