@@ -29,17 +29,17 @@ defaults: &defaults
     ##### Building library
     - restore_cache:
         keys:
-          - stack--nAz6PsL--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "projects.summary" }}--{{ checksum "package.yaml" }}--{{ checksum "stack.yaml" }}
-          - stack--nAz6PsL--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "projects.summary" }}--{{ checksum "package.yaml" }}
-          - stack--nAz6PsL--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "projects.summary" }}--
-          - stack--nAz6PsL--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--X
+          - stack--s7Cews7--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "projects.summary" }}--{{ checksum "package.yaml" }}--{{ checksum "stack.yaml" }}
+          - stack--s7Cews7--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "projects.summary" }}--{{ checksum "package.yaml" }}
+          - stack--s7Cews7--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "projects.summary" }}--
+          - stack--s7Cews7--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--X
 
     - run:
         name: Stack setup
         command: stack setup --resolver ${LTS}
 
     - save_cache:
-        key:    stack--nAz6PsL--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--X
+        key:    stack--s7Cews7--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--X
         paths:  [~/.stack, ~/project/.stack-work]
 
     - run:
@@ -49,13 +49,13 @@ defaults: &defaults
           stack build --resolver ${LTS} --dependencies-only --test --no-run-tests
 
     - save_cache:
-        key:    stack--nAz6PsL--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "projects.summary" }}--{{ checksum "package.yaml" }}
+        key:    stack--s7Cews7--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "projects.summary" }}--{{ checksum "package.yaml" }}
         paths:  [~/.stack, ~/project/.stack-work]
 
     - run: stack build --resolver ${LTS} --test --no-run-tests
 
     - save_cache:
-        key:    stack--nAz6PsL--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "projects.summary" }}--{{ checksum "package.yaml" }}--{{ checksum "stack.yaml" }}
+        key:    stack--s7Cews7--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "projects.summary" }}--{{ checksum "package.yaml" }}--{{ checksum "stack.yaml" }}
         paths:  [~/.stack, ~/project/.stack-work]
 
     ##### Running tests
