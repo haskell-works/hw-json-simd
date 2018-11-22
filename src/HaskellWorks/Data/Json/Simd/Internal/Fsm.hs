@@ -1,8 +1,8 @@
-module HaskellWorks.Data.Json.Simd.Fsm where
+module HaskellWorks.Data.Json.Simd.Internal.Fsm where
 
-import HaskellWorks.Data.Json.Simd.Fsm.Core (State (..), StateMachine)
+import HaskellWorks.Data.Json.Simd.Internal.Fsm.Core (State (..), StateMachine)
 
-import qualified HaskellWorks.Data.Json.Simd.Fsm.Core as FSM
+import qualified HaskellWorks.Data.Json.Simd.Internal.Fsm.Core as FSM
 
 {-| `StateMachine` for matching well-formed C-style comments
     The match succeeds if the state `S00` transitions to state `S00`

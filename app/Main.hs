@@ -1,10 +1,11 @@
 module Main where
 
-import HaskellWorks.Data.Json.Simd.Foreign
-
-import qualified System.IO as IO
+import App.Commands
+import Control.Monad
+import Data.Semigroup      ((<>))
+import Options.Applicative
 
 main :: IO ()
-main = do
-  moo
-  IO.putStrLn "Hello World"
+main = join $ customExecParser
+  (prefs $ showHelpOnEmpty <> showHelpOnError)
+  (info (commands <**> helper) idm)
