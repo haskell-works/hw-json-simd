@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric  #-}
 
-module HaskellWorks.Data.Json.Simd.Fsm.Core
+module HaskellWorks.Data.Json.Simd.Internal.Fsm.Core
   ( -- * Building state machines
     buildStateMachine
   , State(..)

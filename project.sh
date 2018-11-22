@@ -4,29 +4,42 @@ STACK_FLAGS="
   --flag bits-extra:bmi2
   --flag hw-rankselect-base:bmi2
   --flag hw-rankselect:bmi2
-  --flag hw-simd:bmi2
-  --flag hw-simd:avx2
 "
 
-case $1 in
+cmd="$1"
+
+shift
+
+case "$cmd" in
+  install)
+    stack install \
+      --test --no-run-tests --bench --no-run-benchmarks \
+      $STACK_FLAGS "$@"
+    ;;
+
   build)
     stack build \
       --test --no-run-tests --bench --no-run-benchmarks \
-      $STACK_FLAGS
+      $STACK_FLAGS "$@"
     ;;
 
   test)
     stack test \
-      $STACK_FLAGS
+      $STACK_FLAGS "$@"
+    ;;
+
+  exec)
+    stack exec \
+      $STACK_FLAGS "$@"
     ;;
 
   bench)
     stack bench \
-      $STACK_FLAGS
+      $STACK_FLAGS "$@"
     ;;
 
   repl)
     stack repl \
-      $STACK_FLAGS
+      $STACK_FLAGS "$@"
     ;;
 esac
