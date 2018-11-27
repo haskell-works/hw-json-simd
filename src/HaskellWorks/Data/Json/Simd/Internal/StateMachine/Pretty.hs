@@ -5,6 +5,7 @@ module HaskellWorks.Data.Json.Simd.Internal.StateMachine.Pretty
   , transitionTableSimdInC
   , phiTableInC
   , phiTableSimdInC
+  , transitionPhiTableSimdInC
   ) where
 
 import Data.List
@@ -27,7 +28,17 @@ instance PLit Word8 where
   plit w = fromString $ '0':'x':padl 2 '0' (showHex w [])
 
 instance PLit Word64 where
-  plit w = fromString $ '0':'x':padl 8 '0' (showHex w [])
+  plit w = fromString $ '0':'x':padl 16 '0' (showHex w [])
+
+instance (PLit a, PLit b, PLit c, PLit d) => PLit (Vec4 a b c d) where
+  plit (Vec4 a b c d) = "{"
+    <> plit a <> ", "
+    <> plit b <> ", "
+    <> plit c <> ", "
+    <> plit d <> "}"
+
+instance (PLit WZero) where
+  plit _ = "0"
 
 transitionTableInC :: Doc ()
 transitionTableInC = embrace (mkV <$> wss)
@@ -61,3 +72,16 @@ embraceN (ds:dss) = vsep $ concat
   , ["}"]
   ]
 embraceN [] = "{}"
+
+data Vec4 a b c d = Vec4 a b c d
+
+data WZero = WZero
+
+word64 :: Word64 -> Word64
+word64 = id
+
+transitionPhiTableSimdInC :: Doc ()
+transitionPhiTableSimdInC = embraceN (chunksOf 1 (fmap plit pts))
+  where pts = zipWith (\p t -> Vec4 t WZero p WZero)
+                  (word64 . fromIntegral <$>  DVS.toList SM.phiTableSimd        )
+                  (                           DVS.toList SM.transitionTableSimd )

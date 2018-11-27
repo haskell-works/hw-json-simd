@@ -43,3 +43,14 @@ size_t write_bp_chunk(
 size_t write_bp_chunk_final(
     bp_state_t *bp_state,
     uint8_t *out_buffer);
+
+// ---
+
+int sm_main(
+    int argc,
+    char **argv);
+
+uint64_t sm_process_chunk(
+    uint8_t *in_buffer,
+    size_t in_length,
+    uint32_t *inout_state);
