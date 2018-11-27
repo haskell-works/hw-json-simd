@@ -34,7 +34,11 @@ dependencies:
 - lens
 - parallel
 - mmap
+- prettyprinter
+- split
+- text
 - vector
+- word8
 
 library:
   build-tools:
