@@ -58,6 +58,7 @@ int main_spliced(
   uint8_t *bits_of_b = malloc(W32_BUFFER_SIZE); memset(bits_of_b, 0, W32_BUFFER_SIZE);
   uint8_t *bits_of_e = malloc(W32_BUFFER_SIZE); memset(bits_of_e, 0, W32_BUFFER_SIZE);
   uint8_t *bits_of_q = malloc(W32_BUFFER_SIZE); memset(bits_of_q, 0, W32_BUFFER_SIZE);
+  uint8_t *bits_of_w = malloc(W32_BUFFER_SIZE); memset(bits_of_q, 0, W32_BUFFER_SIZE);
 
   uint8_t result_ib[W8_BUFFER_SIZE / 8];
   uint8_t result_a [W8_BUFFER_SIZE / 8];
@@ -293,14 +294,9 @@ void summarise(
     uint32_t *out_mask_d,
     uint32_t *out_mask_a,
     uint32_t *out_mask_z,
-    uint32_t *out_mask_quote,
-    uint32_t *out_mask_backslash) {
-  for (int i = 0; i < 32; ++i) {
-    if (buffer[i] == '\n') {
-      buffer[i] = '.';
-    }
-  }
-
+    uint32_t *out_mask_q,
+    uint32_t *out_mask_b) {
+#if defined AVX2_ENABLED
   __m256i v_in_data = *(__m256i *)buffer;
   __m256i v_bytes_of_comma      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(','));
   __m256i v_bytes_of_colon      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(':'));
@@ -310,19 +306,48 @@ void summarise(
   __m256i v_bytes_of_bracket_z  = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(']'));
   __m256i v_bytes_of_quote      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('"'));
   __m256i v_bytes_of_backslash  = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('\\'));
+  __m256i v_bytes_of_space      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(' '));
+  __m256i v_bytes_of_tab        = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('\t'));
+  __m256i v_bytes_of_cr         = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('\r'));
+  __m256i v_bytes_of_lf         = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('\n'));
 
-  uint32_t mask_comma     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_comma    );
-  uint32_t mask_colon     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_colon    );
-  uint32_t mask_brace_a   = (uint32_t)_mm256_movemask_epi8(v_bytes_of_brace_a  );
-  uint32_t mask_brace_z   = (uint32_t)_mm256_movemask_epi8(v_bytes_of_brace_z  );
-  uint32_t mask_bracket_a = (uint32_t)_mm256_movemask_epi8(v_bytes_of_bracket_a);
-  uint32_t mask_bracket_z = (uint32_t)_mm256_movemask_epi8(v_bytes_of_bracket_z);
+  uint32_t mask_comma     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_comma     );
+  uint32_t mask_colon     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_colon     );
+  uint32_t mask_brace_a   = (uint32_t)_mm256_movemask_epi8(v_bytes_of_brace_a   );
+  uint32_t mask_brace_z   = (uint32_t)_mm256_movemask_epi8(v_bytes_of_brace_z   );
+  uint32_t mask_bracket_a = (uint32_t)_mm256_movemask_epi8(v_bytes_of_bracket_a );
+  uint32_t mask_bracket_z = (uint32_t)_mm256_movemask_epi8(v_bytes_of_bracket_z );
+  uint32_t mask_space     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_space     );
+  uint32_t mask_tab       = (uint32_t)_mm256_movemask_epi8(v_bytes_of_tab       );
+  uint32_t mask_cr        = (uint32_t)_mm256_movemask_epi8(v_bytes_of_cr        );
+  uint32_t mask_lf        = (uint32_t)_mm256_movemask_epi8(v_bytes_of_lf        );
 
-  *out_mask_d         = mask_comma    | mask_colon;
-  *out_mask_a         = mask_brace_a  | mask_bracket_a;
-  *out_mask_z         = mask_brace_z  | mask_bracket_z;
-  *out_mask_quote     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_quote    );
-  *out_mask_backslash = (uint32_t)_mm256_movemask_epi8(v_bytes_of_backslash);
+  *out_mask_d = mask_comma    | mask_colon;
+  *out_mask_a = mask_brace_a  | mask_bracket_a;
+  *out_mask_z = mask_brace_z  | mask_bracket_z;
+  *out_mask_q = (uint32_t)_mm256_movemask_epi8(v_bytes_of_quote    );
+  *out_mask_b = (uint32_t)_mm256_movemask_epi8(v_bytes_of_backslash);
+#elif defined SSE42_ENABLED
+  __m128i v_in_data_0 = *((__m128i *)buffer    );
+  __m128i v_in_data_1 = *((__m128i *)buffer + 1);
+  uint16_t *out_w32_mask_d = (uint16_t *)out_mask_d;
+  uint16_t *out_w32_mask_a = (uint16_t *)out_mask_a;
+  uint16_t *out_w32_mask_z = (uint16_t *)out_mask_z;
+  uint16_t *out_w32_mask_q = (uint16_t *)out_mask_q;
+  uint16_t *out_w32_mask_b = (uint16_t *)out_mask_b;
+  out_w32_mask_d[0] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)":,", 2, v_in_data_0, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_d[1] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)":,", 2, v_in_data_1, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_a[0] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"{[", 2, v_in_data_0, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_a[1] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"{[", 2, v_in_data_1, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_z[0] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"]}", 2, v_in_data_0, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_z[1] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"]}", 2, v_in_data_1, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_q[0] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\"", 1, v_in_data_0, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_q[1] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\"", 1, v_in_data_1, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_b[0] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\\", 1, v_in_data_0, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_b[1] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\\", 1, v_in_data_1, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+#else
+#error "Require AVX2_ENABLED or SSE42_ENABLED to be defined"
+#endif
 }
 
 uint64_t bitwise_add(uint64_t a, uint64_t b, uint64_t *c) {

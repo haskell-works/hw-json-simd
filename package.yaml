@@ -8,8 +8,10 @@ copyright:           "2018 John Ky"
 
 extra-source-files:
 - cbits/simd.h
-- cbits/simd.c
 - cbits/simd-spliced.c
+- cbits/simd-state.c
+- cbits/simd-phi-table-32.c
+- cbits/simd-transition-table-32.c
 - README.md
 - ChangeLog.md
 
@@ -34,14 +36,21 @@ dependencies:
 - lens
 - parallel
 - mmap
+- prettyprinter
+- split
+- text
 - vector
+- word8
 
 library:
   build-tools:
   - c2hs
   c-sources:
+  - cbits/debug.c
   - cbits/simd-spliced.c
-  - cbits/simd.c
+  - cbits/simd-state.c
+  - cbits/simd-phi-table-32.c
+  - cbits/simd-transition-table-32.c
   include-dirs:
   - cbits
   source-dirs: src
@@ -69,3 +78,55 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - hw-json-simd
+
+when:
+- condition: flag(sse42)
+  cc-options:
+  - -msse4.2
+  ghc-options:
+  - -msse4.2
+- condition: flag(bmi2)
+  cc-options:
+  - -mbmi2
+  - -DBMI2_ENABLED
+- condition: (flag(bmi2)) && (impl(ghc >=8.4.1))
+  ghc-options:
+  - -mbmi2
+  - -msse4.2
+- condition:  flag(avx2)
+  cc-options:
+  - -mavx2
+  - -DAVX2_ENABLED
+- condition: (flag(avx2)) && (impl(ghc >=8.4.1))
+  ghc-options:
+  - -mbmi2
+  - -msse4.2
+  cpp-options:
+  - -DBMI2_ENABLED
+  - -DAVX2_ENABLED
+- condition: (impl(ghc >=8.0.1))
+  ghc-options:
+  - -Wcompat
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wredundant-constraints
+- condition: (!impl(ghc >=8.0.1))
+  dependencies:
+    - transformers          >= 0.4        && < 0.6
+    - semigroups            >= 0.8.4      && < 0.19
+
+flags:
+  sse42:
+    description: Enable SSE 4.2 optimisations.
+    manual: false
+    default: true
+
+  bmi2:
+    description: Enable bmi2 instruction set
+    manual: false
+    default: false
+
+  avx2:
+    description: Enable avx2 instruction set
+    manual: false
+    default: false
