@@ -269,6 +269,8 @@ uint64_t sm_process_chunk(
   vm128i_t states;
 
   memset(&states, 0, sizeof(states));
+
+  uint32_t blah[100000];
   
   __m256i s = _mm256_set_epi64x(0, *inout_state, 0, *inout_state);
 
@@ -278,6 +280,12 @@ uint64_t sm_process_chunk(
     s = _mm256_shuffle_epi8(
       _mm256_set_epi64x(0, phi_table_simd[w], 0, transition_table_simd[w]),
       s);
+
+    s = _mm256_permute4x64_epi64(s, 0x11);
+
+    blah[i] = _mm256_extract_epi64(s, 2);
+
+    // printf("%02x\n", blah[i]);
   }
 
   *inout_state = _mm256_extract_epi64(s, 0);

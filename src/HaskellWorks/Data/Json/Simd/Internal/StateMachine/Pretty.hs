@@ -62,11 +62,11 @@ phiTableInC = embrace (mkV <$> wss)
 
 transitionTableSimdInC :: Doc ()
 transitionTableSimdInC = embraceN (chunksOf 8 (fmap plit ws))
-  where ws = DVS.toList SM.transitionTableSimd
+  where ws = word32 . fromIntegral <$> DVS.toList SM.transitionTableSimd
 
 phiTableSimdInC :: Doc ()
 phiTableSimdInC = embraceN (chunksOf 8 (fmap plit ws))
-  where ws = DVS.toList SM.transitionTableSimd
+  where ws = word32 . fromIntegral <$> DVS.toList SM.phiTableSimd
 
 embrace :: [Doc ()] -> Doc ()
 embrace (d:ds) = intro "{" d <> mconcat (intro "," <$> ds) <> "}"
@@ -89,6 +89,9 @@ data WZero = WZero
 
 word64 :: Word64 -> Word64
 word64 = id
+
+word32 :: Word32 -> Word32
+word32 = id
 
 transitionPhiTableSimdWideInC :: Doc ()
 transitionPhiTableSimdWideInC = embraceN (chunksOf 1 (fmap plit pts))
