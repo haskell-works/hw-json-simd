@@ -239,7 +239,7 @@ int sm_main(
       bytes_read = next_alignment;
     }
 
-    accum += sm_process_chunk(buffer, bytes_read,
+    sm_process_chunk(buffer, bytes_read,
       &state,
       phi_buffer);
 
@@ -314,7 +314,7 @@ extern uint32_t transition_table_simd[];
 
 extern uint32_t phi_table_simd[];
 
-uint64_t sm_process_chunk(
+void sm_process_chunk(
     uint8_t *in_buffer,
     size_t in_length,
     uint32_t *inout_state,
@@ -334,6 +334,4 @@ uint64_t sm_process_chunk(
   }
 
   *inout_state = _mm256_extract_epi64(s, 0);
-
-  return 0;
 }

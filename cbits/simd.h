@@ -50,7 +50,7 @@ int sm_main(
     int argc,
     char **argv);
 
-uint64_t sm_process_chunk(
+void sm_process_chunk(
     uint8_t *in_buffer,
     size_t in_length,
     uint32_t *inout_state,
