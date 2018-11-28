@@ -10,7 +10,8 @@
 #define W32_BUFFER_SIZE   (W8_BUFFER_SIZE / 4)
 #define W64_BUFFER_SIZE   (W8_BUFFER_SIZE / 8)
 
-extern __m256i transition_phi_table[256];
+extern __m256i transition_phi_table_wide[256];
+extern __m128i transition_phi_table[256];
 
 typedef struct vec32_8i {
   uint8_t w00;
@@ -91,6 +92,62 @@ typedef union vm256i {
   vec4_64i_t w64s;
   __m256i m;
 } vm256i_t;
+
+
+
+
+
+typedef struct vec16_8i {
+  uint8_t w00;
+  uint8_t w01;
+  uint8_t w02;
+  uint8_t w03;
+  uint8_t w04;
+  uint8_t w05;
+  uint8_t w06;
+  uint8_t w07;
+  uint8_t w08;
+  uint8_t w09;
+  uint8_t w10;
+  uint8_t w11;
+  uint8_t w12;
+  uint8_t w13;
+  uint8_t w14;
+  uint8_t w15;
+} vec16_8i_t;
+
+typedef struct vec8_16i {
+  uint16_t w00;
+  uint16_t w01;
+  uint16_t w02;
+  uint16_t w03;
+  uint16_t w04;
+  uint16_t w05;
+  uint16_t w06;
+  uint16_t w07;
+} vec8_16i_t;
+
+typedef struct vec4_32i {
+  uint32_t w0;
+  uint32_t w1;
+  uint32_t w2;
+  uint32_t w3;
+} vec4_32i_t;
+
+typedef struct vec2_64i {
+  uint64_t w0;
+  uint64_t w1;
+} vec2_64i_t;
+
+typedef union vm128i {
+  vec8_32i_t w8s;
+  vec8_32i_t w16s;
+  vec8_32i_t w32s;
+  vec4_64i_t w64s;
+  __m128i m;
+} vm128i_t;
+
+
 
 int sm_main(
     int argc,
@@ -203,20 +260,34 @@ uint64_t sm_process_chunk(
     uint8_t *in_buffer,
     size_t in_length,
     uint32_t *inout_state) {
-  vm256i_t states;
+  vm128i_t states;
 
   memset(&states, 0, sizeof(states));
   
   states.w32s.w0 = *inout_state;
-  states.w32s.w4 = *inout_state;
+  states.w32s.w2 = *inout_state;
+
+  vm128i_t new_states;
 
   // printf("%zu\n", in_length);
 
-  for (size_t i = 0; i < in_length; ++i) {
+  for (size_t i = 0; i < in_length; i += 4) {
     // printf("====\n");
-    __m256i step = transition_phi_table[in_buffer[i]];
-    vm256i_t new_states;
-    new_states.m = _mm256_shuffle_epi8(step, states.m);
+    new_states.m = _mm_shuffle_epi8(transition_phi_table[in_buffer[i    ]], states.m);
+    states.w32s.w0  = new_states.w32s.w0;
+    states.w32s.w4  = new_states.w32s.w0;
+
+    new_states.m = _mm_shuffle_epi8(transition_phi_table[in_buffer[i + 1]], states.m);
+    states.w32s.w0  = new_states.w32s.w0;
+    states.w32s.w4  = new_states.w32s.w0;
+
+    new_states.m = _mm_shuffle_epi8(transition_phi_table[in_buffer[i + 2]], states.m);
+    states.w32s.w0  = new_states.w32s.w0;
+    states.w32s.w4  = new_states.w32s.w0;
+
+    new_states.m = _mm_shuffle_epi8(transition_phi_table[in_buffer[i + 3]], states.m);
+    states.w32s.w0  = new_states.w32s.w0;
+    states.w32s.w4  = new_states.w32s.w0;
 
     // printf("states.m    : "); print256_num(states.m     ); printf("\n");
     // printf("step        : "); print256_num(step         ); printf("\n");
@@ -224,8 +295,6 @@ uint64_t sm_process_chunk(
 
     // printf("%c: %d\n", in_buffer[i], new_states.w8s.w0);
 
-    states.w32s.w0  = new_states.w32s.w0;
-    // states.w32s.w4  = new_states.w32s.w0;
   }
 
   *inout_state = states.w32s.w0;

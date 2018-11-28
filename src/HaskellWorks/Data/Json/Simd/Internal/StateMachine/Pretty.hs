@@ -27,6 +27,9 @@ class PLit a where
 instance PLit Word8 where
   plit w = fromString $ '0':'x':padl 2 '0' (showHex w [])
 
+instance PLit Word32 where
+  plit w = fromString $ '0':'x':padl 8 '0' (showHex w [])
+
 instance PLit Word64 where
   plit w = fromString $ '0':'x':padl 16 '0' (showHex w [])
 
@@ -36,6 +39,11 @@ instance (PLit a, PLit b, PLit c, PLit d) => PLit (Vec4 a b c d) where
     <> plit b <> ", "
     <> plit c <> ", "
     <> plit d <> "}"
+
+instance (PLit a, PLit b) => PLit (Vec2 a b) where
+  plit (Vec2 a b) = "{"
+    <> plit a <> ", "
+    <> plit b <> "}"
 
 instance (PLit WZero) where
   plit _ = "0"
@@ -75,13 +83,21 @@ embraceN [] = "{}"
 
 data Vec4 a b c d = Vec4 a b c d
 
+data Vec2 a b = Vec2 a b
+
 data WZero = WZero
 
 word64 :: Word64 -> Word64
 word64 = id
 
+transitionPhiTableSimdWideInC :: Doc ()
+transitionPhiTableSimdWideInC = embraceN (chunksOf 1 (fmap plit pts))
+  where pts = zipWith (\p t -> Vec4 t WZero p WZero)
+                  (word64 . fromIntegral <$>  DVS.toList SM.phiTableSimd        )
+                  (                           DVS.toList SM.transitionTableSimd )
+
 transitionPhiTableSimdInC :: Doc ()
 transitionPhiTableSimdInC = embraceN (chunksOf 1 (fmap plit pts))
-  where pts = zipWith (\p t -> Vec4 t WZero p WZero)
+  where pts = zipWith (\p t -> Vec2 t p)
                   (word64 . fromIntegral <$>  DVS.toList SM.phiTableSimd        )
                   (                           DVS.toList SM.transitionTableSimd )
