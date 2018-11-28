@@ -185,6 +185,10 @@ int sm_main(
   uint8_t buffer[W8_BUFFER_SIZE];
   uint32_t phi_buffer[W8_BUFFER_SIZE];
 
+  uint8_t ibs_buffer[W8_BUFFER_SIZE];
+  uint8_t ops_buffer[W8_BUFFER_SIZE];
+  uint8_t cls_buffer[W8_BUFFER_SIZE];
+
   uint32_t result_ib[W8_BUFFER_SIZE];
   uint32_t result_a [W8_BUFFER_SIZE];
   uint32_t result_z [W8_BUFFER_SIZE];
@@ -223,6 +227,11 @@ int sm_main(
       &state,
       phi_buffer);
 
+    make_ib_bp_chunks(state, phi_buffer, bytes_read,
+      ibs_buffer,
+      ops_buffer,
+      cls_buffer);
+
     size_t ib_bytes = (bytes_read + 7) / 8;
 
     fwrite(result_ib, 1, ib_bytes, ib_out);
@@ -255,8 +264,7 @@ void make_ib_bp_chunks(
     size_t phi_length,
     uint8_t *out_ibs,
     uint8_t *out_ops,
-    uint8_t *out_cls,
-    size_t *out_bp_length) {
+    uint8_t *out_cls) {
   __m128i ib_offset = _mm_set_epi64x(0, 5 + state * 8);
   __m128i op_offset = _mm_set_epi64x(0, 6 + state * 8);
   __m128i cl_offset = _mm_set_epi64x(0, 7 + state * 8);

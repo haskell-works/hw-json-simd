@@ -55,3 +55,11 @@ uint64_t sm_process_chunk(
     size_t in_length,
     uint32_t *inout_state,
     uint32_t *out_phi_buffer);
+
+void make_ib_bp_chunks(
+    uint8_t state,
+    uint32_t *in_phis,
+    size_t phi_length,
+    uint8_t *out_ibs,
+    uint8_t *out_ops,
+    uint8_t *out_cls);
