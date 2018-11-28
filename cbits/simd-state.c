@@ -184,6 +184,20 @@ int sm_main(
     exit(1);
   }
 
+  FILE *op_out = fopen(op_out_filename, "w");
+
+  if (!op_out) {
+    fprintf(stderr, "Failed to open op output file %s\n", op_out_filename);
+    exit(1);
+  }
+
+  FILE *cl_out = fopen(cl_out_filename, "w");
+
+  if (!cl_out) {
+    fprintf(stderr, "Failed to open cl output file %s\n", cl_out_filename);
+    exit(1);
+  }
+
   uint8_t buffer[W8_BUFFER_SIZE];
   uint32_t phi_buffer[W8_BUFFER_SIZE];
 
