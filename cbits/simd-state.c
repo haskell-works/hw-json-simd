@@ -152,7 +152,7 @@ typedef union vm128i {
 int sm_main(
     int argc,
     char **argv) {
-  if (argc != 4) {
+  if (argc != 6) {
     fprintf(stderr, "./a.out <input-file> <output-ib-file> <output-bp-file>\n");
     exit(1);
   }
@@ -160,6 +160,8 @@ int sm_main(
   char *in_filename     = argv[1];
   char *ib_out_filename = argv[2];
   char *bp_out_filename = argv[3];
+  char *op_out_filename = argv[4];
+  char *cl_out_filename = argv[5];
 
   FILE *in = fopen(in_filename, "r");
 
