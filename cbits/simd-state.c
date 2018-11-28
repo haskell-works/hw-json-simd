@@ -183,6 +183,7 @@ int sm_main(
   }
 
   uint8_t buffer[W8_BUFFER_SIZE];
+  uint32_t phi_buffer[W8_BUFFER_SIZE];
 
   uint32_t result_ib[W8_BUFFER_SIZE];
   uint32_t result_a [W8_BUFFER_SIZE];
@@ -192,9 +193,7 @@ int sm_main(
   uint8_t out_bp_buffer[W32_BUFFER_SIZE * 2];
 
   size_t total_bytes_read = 0;
-  vm256i_t state;
-  memset(&state, 0, sizeof(state));
-  state.w32s.w0 = 0x03020100;
+  uint32_t state = 0x03020100;
 
   while (1) {
     size_t bytes_read = fread(buffer, 1, W8_BUFFER_SIZE, in);
@@ -221,7 +220,8 @@ int sm_main(
     }
 
     accum += sm_process_chunk(buffer, bytes_read,
-      &state.w32s.w0);
+      &state,
+      phi_buffer);
 
     size_t ib_bytes = (bytes_read + 7) / 8;
 
@@ -265,13 +265,8 @@ extern uint32_t phi_table_simd[];
 uint64_t sm_process_chunk(
     uint8_t *in_buffer,
     size_t in_length,
-    uint32_t *inout_state) {
-  vm128i_t states;
-
-  memset(&states, 0, sizeof(states));
-
-  uint32_t blah[100000];
-  
+    uint32_t *inout_state,
+    uint32_t *out_phi_buffer) {  
   __m256i s = _mm256_set_epi64x(0, *inout_state, 0, *inout_state);
 
   for (size_t i = 0; i < in_length; i += 1) {
@@ -283,9 +278,7 @@ uint64_t sm_process_chunk(
 
     s = _mm256_permute4x64_epi64(s, 0x11);
 
-    blah[i] = _mm256_extract_epi64(s, 2);
-
-    // printf("%02x\n", blah[i]);
+    out_phi_buffer[i] = _mm256_extract_epi64(s, 2);
   }
 
   *inout_state = _mm256_extract_epi64(s, 0);
