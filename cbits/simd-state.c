@@ -268,9 +268,12 @@ uint64_t sm_process_chunk(
   states.w32s.w2 = *inout_state;
 
   __m128i s = states.m;
+  __m128i t = _mm_set_epi8(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
 
   for (size_t i = 0; i < in_length; i += 1) {
+    __m128i _mm_set_epi64 (__m64 e1, __m64 e0)
     s = _mm_shuffle_epi8(transition_phi_table[in_buffer[i]], s);
+    s = _mm_shuffle_epi8(s, t);
   }
 
   states.m = s;
