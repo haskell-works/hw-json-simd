@@ -256,6 +256,12 @@ int sm_main(
 //     __m256i mask,
 //     const int scale)
 
+
+
+extern uint32_t transition_table_simd[];
+
+extern uint32_t phi_table_simd[];
+
 uint64_t sm_process_chunk(
     uint8_t *in_buffer,
     size_t in_length,
@@ -269,14 +275,12 @@ uint64_t sm_process_chunk(
   for (size_t i = 0; i < in_length; i += 1) {
     uint8_t w = in_buffer[i];
 
-    s = _mm256_set_epi64x(
-      _mm256_set_epi64x(0, phi_table[w], 0, transition_table[w]),
-      transition_phi_table[w], s);
+    s = _mm256_shuffle_epi8(
+      _mm256_set_epi64x(0, phi_table_simd[w], 0, transition_table_simd[w]),
+      s);
   }
 
-  states.m = s;
-
-  *inout_state = states.w32s.w0;
+  *inout_state = _mm256_extract_epi64(s, 0);
 
   return 0;
 }
