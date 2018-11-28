@@ -253,8 +253,8 @@ void make_ib_bp_chunks(
     uint8_t state,
     uint32_t *in_phis,
     size_t phi_length,
-    uint64_t *out_ibs,
-    uint64_t *out_bps,
+    uint8_t *out_ibs,
+    uint8_t *out_bps,
     size_t *out_bp_length) {
   __m128i ib_offset = _mm_set_epi64x(0, 5 + state * 8);
   __m128i op_offset = _mm_set_epi64x(0, 6 + state * 8);
@@ -268,6 +268,10 @@ void make_ib_bp_chunks(
     uint8_t all_ibs = (uint8_t)_pext_u32(_mm256_movemask_epi8(v_ib_8), 0x11111111);
     uint8_t all_ops = (uint8_t)_pext_u32(_mm256_movemask_epi8(v_op_8), 0x11111111);
     uint8_t all_cls = (uint8_t)_pext_u32(_mm256_movemask_epi8(v_cl_8), 0x11111111);
+
+    size_t j = i / 8;
+    out_ibs[j] = all_ibs;
+
   }
 
 }
