@@ -264,16 +264,14 @@ uint64_t sm_process_chunk(
 
   memset(&states, 0, sizeof(states));
   
-  states.w16s.w0 = *inout_state;
-  states.w32s.w2 = *inout_state;
-
-  __m128i s = states.m;
-  __m128i t = _mm_set_epi8(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+  __m256i s = _mm256_set_epi64x(0, *inout_state, 0, *inout_state);
 
   for (size_t i = 0; i < in_length; i += 1) {
-    __m128i _mm_set_epi64 (__m64 e1, __m64 e0)
-    s = _mm_shuffle_epi8(transition_phi_table[in_buffer[i]], s);
-    s = _mm_shuffle_epi8(s, t);
+    uint8_t w = in_buffer[i];
+
+    s = _mm256_set_epi64x(
+      _mm256_set_epi64x(0, phi_table[w], 0, transition_table[w]),
+      transition_phi_table[w], s);
   }
 
   states.m = s;
