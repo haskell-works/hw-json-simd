@@ -276,9 +276,9 @@ uint64_t sm_process_chunk(
       _mm256_set_epi64x(0, phi_table_simd[w], 0, transition_table_simd[w]),
       s);
 
-    s = _mm256_permute4x64_epi64(s, 0x11);
-
     out_phi_buffer[i] = _mm256_extract_epi64(s, 2);
+
+    s = _mm256_permute4x64_epi64(s, 0x11);
   }
 
   *inout_state = _mm256_extract_epi64(s, 0);
