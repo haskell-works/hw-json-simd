@@ -264,38 +264,16 @@ uint64_t sm_process_chunk(
 
   memset(&states, 0, sizeof(states));
   
-  states.w32s.w0 = *inout_state;
+  states.w16s.w0 = *inout_state;
   states.w32s.w2 = *inout_state;
 
-  vm128i_t new_states;
+  __m128i s = states.m;
 
-  // printf("%zu\n", in_length);
-
-  for (size_t i = 0; i < in_length; i += 4) {
-    // printf("====\n");
-    new_states.m = _mm_shuffle_epi8(transition_phi_table[in_buffer[i    ]], states.m);
-    states.w32s.w0  = new_states.w32s.w0;
-    states.w32s.w4  = new_states.w32s.w0;
-
-    new_states.m = _mm_shuffle_epi8(transition_phi_table[in_buffer[i + 1]], states.m);
-    states.w32s.w0  = new_states.w32s.w0;
-    states.w32s.w4  = new_states.w32s.w0;
-
-    new_states.m = _mm_shuffle_epi8(transition_phi_table[in_buffer[i + 2]], states.m);
-    states.w32s.w0  = new_states.w32s.w0;
-    states.w32s.w4  = new_states.w32s.w0;
-
-    new_states.m = _mm_shuffle_epi8(transition_phi_table[in_buffer[i + 3]], states.m);
-    states.w32s.w0  = new_states.w32s.w0;
-    states.w32s.w4  = new_states.w32s.w0;
-
-    // printf("states.m    : "); print256_num(states.m     ); printf("\n");
-    // printf("step        : "); print256_num(step         ); printf("\n");
-    // printf("new_states.m: "); print256_num(new_states.m ); printf("\n");
-
-    // printf("%c: %d\n", in_buffer[i], new_states.w8s.w0);
-
+  for (size_t i = 0; i < in_length; i += 1) {
+    s = _mm_shuffle_epi8(transition_phi_table[in_buffer[i]], s);
   }
+
+  states.m = s;
 
   *inout_state = states.w32s.w0;
 
