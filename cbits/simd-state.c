@@ -153,7 +153,7 @@ int sm_main(
     int argc,
     char **argv) {
   if (argc != 6) {
-    fprintf(stderr, "./a.out <input-file> <output-ib-file> <output-bp-file>\n");
+    fprintf(stderr, "./a.out <input-file> <output-ib-file> <output-bp-file> <output-op-file> <output-cl-file>\n");
     exit(1);
   }
 
