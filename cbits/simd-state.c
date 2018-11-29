@@ -248,9 +248,9 @@ int sm_main(
       ops_buffer,
       cls_buffer);
 
-    size_t ib_bytes = (bytes_read + 7) / 8;
+    size_t idx_bytes = (bytes_read + 7) / 8;
 
-    fwrite(result_ib, 1, ib_bytes, ib_out);
+    fwrite(result_ib, 1, idx_bytes, ib_out);
 
     // size_t out_bp_bytes = write_bp_chunk(
     //   result_ib,
