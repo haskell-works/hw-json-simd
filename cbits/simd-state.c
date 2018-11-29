@@ -266,6 +266,8 @@ int sm_main(
 
   // write_bp_chunk_final(&bp_state, out_bp_buffer);
 
+  fprintf(stderr, "Final state %u\n", state);
+
   fwrite(out_bp_buffer, 2, sizeof(uint64_t), bp_out);
 
   fclose(in);
