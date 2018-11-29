@@ -7,8 +7,12 @@
 #include "simd.h"
 
 void print256_num(__m256i var) {
+  fprint256_num(stdout, var);
+}
+
+void fprint256_num(FILE *file, __m256i var) {
   uint8_t *val = (uint8_t*)&var;
-  printf("Numerical: "
+  fprintf(file,
     "%02x %02x %02x %02x %02x %02x %02x %02x  %02x %02x %02x %02x %02x %02x %02x %02x  "
     "%02x %02x %02x %02x %02x %02x %02x %02x  %02x %02x %02x %02x %02x %02x %02x %02x"
     , val[ 0], val[ 1], val[ 2], val[ 3], val[ 4], val[ 5], val[ 6], val[ 7]
