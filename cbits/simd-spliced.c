@@ -58,6 +58,7 @@ int main_spliced(
   uint8_t *bits_of_b = malloc(W32_BUFFER_SIZE); memset(bits_of_b, 0, W32_BUFFER_SIZE);
   uint8_t *bits_of_e = malloc(W32_BUFFER_SIZE); memset(bits_of_e, 0, W32_BUFFER_SIZE);
   uint8_t *bits_of_q = malloc(W32_BUFFER_SIZE); memset(bits_of_q, 0, W32_BUFFER_SIZE);
+  uint8_t *bits_of_w = malloc(W32_BUFFER_SIZE); memset(bits_of_q, 0, W32_BUFFER_SIZE);
 
   uint8_t result_ib[W8_BUFFER_SIZE / 8];
   uint8_t result_a [W8_BUFFER_SIZE / 8];
@@ -105,6 +106,7 @@ int main_spliced(
       bits_of_q,
       bits_of_b,
       bits_of_e,
+      bits_of_w,
       &last_trailing_ones,
       &quote_odds_carry,
       &quote_evens_carry,
@@ -294,7 +296,8 @@ void summarise(
     uint32_t *out_mask_a,
     uint32_t *out_mask_z,
     uint32_t *out_mask_q,
-    uint32_t *out_mask_b) {
+    uint32_t *out_mask_b,
+    uint32_t *out_mask_w) {
 #if defined CAP_AVX2
   __m256i v_in_data = *(__m256i *)buffer;
   __m256i v_bytes_of_comma      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(','));
@@ -305,19 +308,28 @@ void summarise(
   __m256i v_bytes_of_bracket_z  = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(']'));
   __m256i v_bytes_of_quote      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('"'));
   __m256i v_bytes_of_backslash  = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('\\'));
+  __m256i v_bytes_of_space      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(' '));
+  __m256i v_bytes_of_tab        = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('\t'));
+  __m256i v_bytes_of_cr         = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('\r'));
+  __m256i v_bytes_of_lf         = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('\n'));
 
-  uint32_t mask_comma     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_comma    );
-  uint32_t mask_colon     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_colon    );
-  uint32_t mask_brace_a   = (uint32_t)_mm256_movemask_epi8(v_bytes_of_brace_a  );
-  uint32_t mask_brace_z   = (uint32_t)_mm256_movemask_epi8(v_bytes_of_brace_z  );
-  uint32_t mask_bracket_a = (uint32_t)_mm256_movemask_epi8(v_bytes_of_bracket_a);
-  uint32_t mask_bracket_z = (uint32_t)_mm256_movemask_epi8(v_bytes_of_bracket_z);
+  uint32_t mask_comma     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_comma     );
+  uint32_t mask_colon     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_colon     );
+  uint32_t mask_brace_a   = (uint32_t)_mm256_movemask_epi8(v_bytes_of_brace_a   );
+  uint32_t mask_brace_z   = (uint32_t)_mm256_movemask_epi8(v_bytes_of_brace_z   );
+  uint32_t mask_bracket_a = (uint32_t)_mm256_movemask_epi8(v_bytes_of_bracket_a );
+  uint32_t mask_bracket_z = (uint32_t)_mm256_movemask_epi8(v_bytes_of_bracket_z );
+  uint32_t mask_space     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_space     );
+  uint32_t mask_tab       = (uint32_t)_mm256_movemask_epi8(v_bytes_of_tab       );
+  uint32_t mask_cr        = (uint32_t)_mm256_movemask_epi8(v_bytes_of_cr        );
+  uint32_t mask_lf        = (uint32_t)_mm256_movemask_epi8(v_bytes_of_lf        );
 
   *out_mask_d = mask_comma    | mask_colon;
   *out_mask_a = mask_brace_a  | mask_bracket_a;
   *out_mask_z = mask_brace_z  | mask_bracket_z;
   *out_mask_q = (uint32_t)_mm256_movemask_epi8(v_bytes_of_quote    );
   *out_mask_b = (uint32_t)_mm256_movemask_epi8(v_bytes_of_backslash);
+  *out_mask_w = mask_space | mask_tab | mask_cr | mask_lf;
 #elif defined CAP_SSE42
   __m128i v_in_data_0 = *((__m128i *)buffer    );
   __m128i v_in_data_1 = *((__m128i *)buffer + 1);
@@ -358,6 +370,7 @@ uint64_t process_chunk(
     uint8_t *work_bits_of_q,       // Working buffer of minimum length ((in_length + 63) / 64)
     uint8_t *work_bits_of_b,       // Working buffer of minimum length ((in_length + 63) / 64)
     uint8_t *work_bits_of_e,       // Working buffer of minimum length ((in_length + 63) / 64)
+    uint8_t *work_bits_of_w,       // Working buffer of minimum length ((in_length + 63) / 64)
     size_t *last_trailing_ones,
     size_t *quote_odds_carry,
     size_t *quote_evens_carry,
@@ -376,6 +389,7 @@ uint64_t process_chunk(
   uint32_t *w32_bits_of_z = (uint32_t *)work_bits_of_z;
   uint32_t *w32_bits_of_q = (uint32_t *)work_bits_of_q;
   uint32_t *w32_bits_of_b = (uint32_t *)work_bits_of_b;
+  uint32_t *w32_bits_of_w = (uint32_t *)work_bits_of_w;
 
   uint64_t *w64_bits_of_d = (uint64_t *)work_bits_of_d;
   uint64_t *w64_bits_of_a = (uint64_t *)work_bits_of_a;
@@ -395,7 +409,8 @@ uint64_t process_chunk(
       w32_bits_of_a + i,
       w32_bits_of_z + i,
       w32_bits_of_q + i,
-      w32_bits_of_b + i);
+      w32_bits_of_b + i,
+      w32_bits_of_w + i);
   }
 
   for (size_t i = 0; i < w8_out_len; ++i) {

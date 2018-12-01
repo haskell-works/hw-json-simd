@@ -28,6 +28,7 @@ uint64_t process_chunk(
     uint8_t *work_bits_of_q,       // Working buffer of minimum length ((in_length + 63) / 64)
     uint8_t *work_bits_of_b,       // Working buffer of minimum length ((in_length + 63) / 64)
     uint8_t *work_bits_of_e,       // Working buffer of minimum length ((in_length + 63) / 64)
+    uint8_t *work_bits_of_s,       // Working buffer of minimum length ((in_length + 63) / 64)
     size_t *last_trailing_ones,
     size_t *quote_odds_carry,
     size_t *quote_evens_carry,
