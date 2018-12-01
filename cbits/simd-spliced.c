@@ -410,3 +410,18 @@ uint64_t process_chunk(
 
   return accum;
 }
+
+void summarise_2(
+    uint8_t *buffer,
+    uint16_t *out_mask_d,
+    uint16_t *out_mask_a,
+    uint16_t *out_mask_z,
+    uint16_t *out_mask_q,
+    uint16_t *out_mask_b) {
+  __m128i v_in_data = *(__m128i *)buffer;
+  *out_mask_d = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)":,", 2, v_in_data, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  *out_mask_a = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"{[", 2, v_in_data, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  *out_mask_z = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"]}", 2, v_in_data, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  *out_mask_q = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\"", 1, v_in_data, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  *out_mask_b = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\\", 1, v_in_data, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+}
