@@ -295,6 +295,7 @@ void summarise(
     uint32_t *out_mask_z,
     uint32_t *out_mask_quote,
     uint32_t *out_mask_backslash) {
+#if defined CAP_AVX2
   __m256i v_in_data = *(__m256i *)buffer;
   __m256i v_bytes_of_comma      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(','));
   __m256i v_bytes_of_colon      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(':'));
@@ -317,6 +318,27 @@ void summarise(
   *out_mask_z         = mask_brace_z  | mask_bracket_z;
   *out_mask_quote     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_quote    );
   *out_mask_backslash = (uint32_t)_mm256_movemask_epi8(v_bytes_of_backslash);
+#elif defined CAP_SSE42
+  __m128i v_in_data_0 = *((__m128i *)buffer    );
+  __m128i v_in_data_1 = *((__m128i *)buffer + 1);
+  uint16_t *out_w32_mask_d = (uint16_t *)out_mask_d;
+  uint16_t *out_w32_mask_a = (uint16_t *)out_mask_a;
+  uint16_t *out_w32_mask_z = (uint16_t *)out_mask_z;
+  uint16_t *out_w32_mask_q = (uint16_t *)out_mask_q;
+  uint16_t *out_w32_mask_b = (uint16_t *)out_mask_b;
+  out_w32_mask_d[0] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)":,", 2, v_in_data_0, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_d[1] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)":,", 2, v_in_data_1, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_a[0] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"{[", 2, v_in_data_0, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_a[1] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"{[", 2, v_in_data_1, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_z[0] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"]}", 2, v_in_data_0, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_z[1] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"]}", 2, v_in_data_1, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_q[0] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\"", 1, v_in_data_0, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_q[1] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\"", 1, v_in_data_1, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_b[0] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\\", 1, v_in_data_0, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+  out_w32_mask_b[1] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\\", 1, v_in_data_1, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
+#else
+#error "Require CAP_AVX2 or CAP_SSE42 to be defined"
+#endif
 }
 
 uint64_t bitwise_add(uint64_t a, uint64_t b, uint64_t *c) {
@@ -344,17 +366,10 @@ uint64_t process_chunk(
     uint8_t *result_a,
     uint8_t *result_z) {
   size_t m256_in_len = in_length / 32;
-  size_t m128_in_len = in_length / 16;
   size_t w64_out_len = in_length / 64;
   size_t w8_out_len  = in_length / 8;
 
   uint8_t  *w8_bits_of_b  = (uint8_t  *)work_bits_of_b;
-
-  uint16_t *w16_bits_of_d = (uint16_t *)work_bits_of_d;
-  uint16_t *w16_bits_of_a = (uint16_t *)work_bits_of_a;
-  uint16_t *w16_bits_of_z = (uint16_t *)work_bits_of_z;
-  uint16_t *w16_bits_of_q = (uint16_t *)work_bits_of_q;
-  uint16_t *w16_bits_of_b = (uint16_t *)work_bits_of_b;
 
   uint32_t *w32_bits_of_d = (uint32_t *)work_bits_of_d;
   uint32_t *w32_bits_of_a = (uint32_t *)work_bits_of_a;
@@ -374,22 +389,13 @@ uint64_t process_chunk(
 
   uint64_t accum = 0;
 
-  // for (size_t i = 0; i < m256_in_len; ++i) {
-  //   summarise(in_buffer + (i * 32),
-  //     w32_bits_of_d + i,
-  //     w32_bits_of_a + i,
-  //     w32_bits_of_z + i,
-  //     w32_bits_of_q + i,
-  //     w32_bits_of_b + i);
-  // }
-
-  for (size_t i = 0; i < m128_in_len; ++i) {
-    summarise_2(in_buffer + (i * 16),
-      w16_bits_of_d + i,
-      w16_bits_of_a + i,
-      w16_bits_of_z + i,
-      w16_bits_of_q + i,
-      w16_bits_of_b + i);
+  for (size_t i = 0; i < m256_in_len; ++i) {
+    summarise(in_buffer + (i * 32),
+      w32_bits_of_d + i,
+      w32_bits_of_a + i,
+      w32_bits_of_z + i,
+      w32_bits_of_q + i,
+      w32_bits_of_b + i);
   }
 
   for (size_t i = 0; i < w8_out_len; ++i) {
@@ -425,19 +431,4 @@ uint64_t process_chunk(
   }
 
   return accum;
-}
-
-void summarise_2(
-    uint8_t *buffer,
-    uint16_t *out_mask_d,
-    uint16_t *out_mask_a,
-    uint16_t *out_mask_z,
-    uint16_t *out_mask_q,
-    uint16_t *out_mask_b) {
-  __m128i v_in_data = *(__m128i *)buffer;
-  *out_mask_d = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)":,", 2, v_in_data, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
-  *out_mask_a = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"{[", 2, v_in_data, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
-  *out_mask_z = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"]}", 2, v_in_data, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
-  *out_mask_q = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\"", 1, v_in_data, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
-  *out_mask_b = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\\", 1, v_in_data, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
 }

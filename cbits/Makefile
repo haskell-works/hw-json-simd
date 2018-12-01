@@ -2,10 +2,10 @@ SRC_FILES := $(wildcard *.c)
 OBJ_FILES=$(patsubst %.c, %.o, $(SRC_FILES))
 
 %.s : %.c
-	gcc -O2 -mavx2 -mlzcnt -mbmi2 -S -Wall $<
+	gcc -O2 -mavx2 -mlzcnt -mbmi2 -S -Wall -DCAP_AVX2 $<
 
 %.o : %.c
-	gcc -O2 -mavx2 -mlzcnt -mbmi2 -c -Wall $<
+	gcc -O2 -mavx2 -mlzcnt -mbmi2 -c -Wall -DCAP_AVX2 $<
 
 a.out : $(OBJ_FILES)
 	gcc -o a.out $(OBJ_FILES)
