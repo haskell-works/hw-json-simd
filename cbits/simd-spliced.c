@@ -295,12 +295,6 @@ void summarise(
     uint32_t *out_mask_z,
     uint32_t *out_mask_quote,
     uint32_t *out_mask_backslash) {
-  for (int i = 0; i < 32; ++i) {
-    if (buffer[i] == '\n') {
-      buffer[i] = '.';
-    }
-  }
-
   __m256i v_in_data = *(__m256i *)buffer;
   __m256i v_bytes_of_comma      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(','));
   __m256i v_bytes_of_colon      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(':'));
