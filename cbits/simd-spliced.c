@@ -293,8 +293,8 @@ void summarise(
     uint32_t *out_mask_d,
     uint32_t *out_mask_a,
     uint32_t *out_mask_z,
-    uint32_t *out_mask_quote,
-    uint32_t *out_mask_backslash) {
+    uint32_t *out_mask_q,
+    uint32_t *out_mask_b) {
 #if defined CAP_AVX2
   __m256i v_in_data = *(__m256i *)buffer;
   __m256i v_bytes_of_comma      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(','));
@@ -313,11 +313,11 @@ void summarise(
   uint32_t mask_bracket_a = (uint32_t)_mm256_movemask_epi8(v_bytes_of_bracket_a);
   uint32_t mask_bracket_z = (uint32_t)_mm256_movemask_epi8(v_bytes_of_bracket_z);
 
-  *out_mask_d         = mask_comma    | mask_colon;
-  *out_mask_a         = mask_brace_a  | mask_bracket_a;
-  *out_mask_z         = mask_brace_z  | mask_bracket_z;
-  *out_mask_quote     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_quote    );
-  *out_mask_backslash = (uint32_t)_mm256_movemask_epi8(v_bytes_of_backslash);
+  *out_mask_d = mask_comma    | mask_colon;
+  *out_mask_a = mask_brace_a  | mask_bracket_a;
+  *out_mask_z = mask_brace_z  | mask_bracket_z;
+  *out_mask_q = (uint32_t)_mm256_movemask_epi8(v_bytes_of_quote    );
+  *out_mask_b = (uint32_t)_mm256_movemask_epi8(v_bytes_of_backslash);
 #elif defined CAP_SSE42
   __m128i v_in_data_0 = *((__m128i *)buffer    );
   __m128i v_in_data_1 = *((__m128i *)buffer + 1);
