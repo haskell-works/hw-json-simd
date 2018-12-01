@@ -323,16 +323,30 @@ void sm_process_chunk(
     uint32_t *out_phi_buffer) {  
   __m256i s = _mm256_set_epi64x(0, *inout_state, 0, *inout_state);
 
-  for (size_t i = 0; i < in_length; i += 1) {
-    uint8_t w = in_buffer[i];
+  size_t in_length_div_4 = in_length / 4;
 
+  uint8_t *buf0 = in_buffer;
+  uint8_t *buf1 = in_buffer + in_length_div_4 * 1;
+  uint8_t *buf2 = in_buffer + in_length_div_4 * 2;
+  uint8_t *buf3 = in_buffer + in_length_div_4 * 3;
+
+  uint32_t *phi0 = out_phi_buffer;
+  uint32_t *phi1 = out_phi_buffer + in_length_div_4 * 1;
+  uint32_t *phi2 = out_phi_buffer + in_length_div_4 * 2;
+  uint32_t *phi3 = out_phi_buffer + in_length_div_4 * 3;
+
+  for (size_t i = 0; i < in_length_div_4; i += 1) {
+    __m256i t = _mm256_shuffle_epi8(
+      _mm256_set_epi64x(phi_table_simd[buf3[i]], phi_table_simd[buf2[i]], phi_table_simd[buf1[i]], phi_table_simd[buf0[i]]),
+      s);
     s = _mm256_shuffle_epi8(
-      _mm256_set_epi64x(0, phi_table_simd[w], 0, transition_table_simd[w]),
+      _mm256_set_epi64x(transition_table_simd[buf3[i]], transition_table_simd[buf2[i]], transition_table_simd[buf1[i]], transition_table_simd[buf0[i]]),
       s);
 
-    out_phi_buffer[i] = _mm256_extract_epi64(s, 2);
-
-    s = _mm256_permute4x64_epi64(s, 0x11);
+    phi0[i] = _mm256_extract_epi64(t, 0);
+    phi1[i] = _mm256_extract_epi64(t, 1);
+    phi2[i] = _mm256_extract_epi64(t, 2);
+    phi3[i] = _mm256_extract_epi64(t, 3);
   }
 
   *inout_state = _mm256_extract_epi64(s, 0);
