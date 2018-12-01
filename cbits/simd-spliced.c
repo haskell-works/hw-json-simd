@@ -298,7 +298,7 @@ void summarise(
     uint32_t *out_mask_q,
     uint32_t *out_mask_b,
     uint32_t *out_mask_w) {
-#if defined CAP_AVX2
+#if defined AVX2_ENABLED
   __m256i v_in_data = *(__m256i *)buffer;
   __m256i v_bytes_of_comma      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(','));
   __m256i v_bytes_of_colon      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(':'));
@@ -330,7 +330,7 @@ void summarise(
   *out_mask_q = (uint32_t)_mm256_movemask_epi8(v_bytes_of_quote    );
   *out_mask_b = (uint32_t)_mm256_movemask_epi8(v_bytes_of_backslash);
   *out_mask_w = mask_space | mask_tab | mask_cr | mask_lf;
-#elif defined CAP_SSE42
+#elif defined SSE42_ENABLED
   __m128i v_in_data_0 = *((__m128i *)buffer    );
   __m128i v_in_data_1 = *((__m128i *)buffer + 1);
   uint16_t *out_w32_mask_d = (uint16_t *)out_mask_d;
@@ -349,7 +349,7 @@ void summarise(
   out_w32_mask_b[0] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\\", 1, v_in_data_0, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
   out_w32_mask_b[1] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\\", 1, v_in_data_1, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
 #else
-#error "Require CAP_AVX2 or CAP_SSE42 to be defined"
+#error "Require AVX2_ENABLED or SSE42_ENABLED to be defined"
 #endif
 }
 
