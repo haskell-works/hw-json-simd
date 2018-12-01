@@ -70,3 +70,11 @@ void make_ib_bp_chunks(
     uint8_t *out_ibs,
     uint8_t *out_ops,
     uint8_t *out_cls);
+
+void summarise_2(
+    uint8_t *buffer,
+    uint16_t *out_mask_d,
+    uint16_t *out_mask_a,
+    uint16_t *out_mask_z,
+    uint16_t *out_mask_q,
+    uint16_t *out_mask_b);

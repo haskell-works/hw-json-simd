@@ -344,10 +344,17 @@ uint64_t process_chunk(
     uint8_t *result_a,
     uint8_t *result_z) {
   size_t m256_in_len = in_length / 32;
+  size_t m128_in_len = in_length / 16;
   size_t w64_out_len = in_length / 64;
   size_t w8_out_len  = in_length / 8;
 
   uint8_t  *w8_bits_of_b  = (uint8_t  *)work_bits_of_b;
+
+  uint16_t *w16_bits_of_d = (uint16_t *)work_bits_of_d;
+  uint16_t *w16_bits_of_a = (uint16_t *)work_bits_of_a;
+  uint16_t *w16_bits_of_z = (uint16_t *)work_bits_of_z;
+  uint16_t *w16_bits_of_q = (uint16_t *)work_bits_of_q;
+  uint16_t *w16_bits_of_b = (uint16_t *)work_bits_of_b;
 
   uint32_t *w32_bits_of_d = (uint32_t *)work_bits_of_d;
   uint32_t *w32_bits_of_a = (uint32_t *)work_bits_of_a;
@@ -367,13 +374,22 @@ uint64_t process_chunk(
 
   uint64_t accum = 0;
 
-  for (size_t i = 0; i < m256_in_len; ++i) {
-    summarise(in_buffer + (i * 32),
-      w32_bits_of_d + i,
-      w32_bits_of_a + i,
-      w32_bits_of_z + i,
-      w32_bits_of_q + i,
-      w32_bits_of_b + i);
+  // for (size_t i = 0; i < m256_in_len; ++i) {
+  //   summarise(in_buffer + (i * 32),
+  //     w32_bits_of_d + i,
+  //     w32_bits_of_a + i,
+  //     w32_bits_of_z + i,
+  //     w32_bits_of_q + i,
+  //     w32_bits_of_b + i);
+  // }
+
+  for (size_t i = 0; i < m128_in_len; ++i) {
+    summarise_2(in_buffer + (i * 16),
+      w16_bits_of_d + i,
+      w16_bits_of_a + i,
+      w16_bits_of_z + i,
+      w16_bits_of_q + i,
+      w16_bits_of_b + i);
   }
 
   for (size_t i = 0; i < w8_out_len; ++i) {
