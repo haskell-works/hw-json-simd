@@ -9,11 +9,6 @@
 
 typedef uint8_t v16si __attribute__ ((vector_size (16)));
 
-void moo ()
-{
-  printf("Hello c-bits\n");
-}
-
 void run(char *in, size_t len, unsigned char *tBytes, char *out) {
   unsigned char a, b, c, d, e, f, g;
   int i, j;
