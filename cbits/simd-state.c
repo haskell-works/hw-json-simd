@@ -320,20 +320,12 @@ void sm_process_chunk(
     uint8_t *in_buffer,
     size_t in_length,
     uint32_t *inout_state,
-    uint32_t *out_phi_buffer) {  
-  __m256i s = _mm256_set_epi64x(0, *inout_state, 0, *inout_state);
+    uint32_t *out_phi_buffer) {
+  __m64 s = _mm_set1_pi32(*inout_state );
 
-  for (size_t i = 0; i < in_length; i += 1) {
-    uint8_t w = in_buffer[i];
-
-    s = _mm256_shuffle_epi8(
-      _mm256_set_epi64x(0, phi_table_simd[w], 0, transition_table_simd[w]),
-      s);
-
-    out_phi_buffer[i] = _mm256_extract_epi64(s, 2);
-
-    s = _mm256_permute4x64_epi64(s, 0x11);
+  for (size_t i = 0; i < in_length; i += 4) {
+    s = _mm_shuffle_pi8(_mm_set1_pi32(transition_table_simd[in_buffer[i]]), s);
   }
 
-  *inout_state = _mm256_extract_epi64(s, 0);
+  *inout_state = (uint32_t)_mm_cvtm64_si64(s);
 }
