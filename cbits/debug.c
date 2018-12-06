@@ -4,7 +4,7 @@
 #include <immintrin.h>
 #include <mmintrin.h>
 
-#include "simd.h"
+#include "debug.h"
 
 void print256_num(__m256i var) {
   fprint256_num(stdout, var);
@@ -31,6 +31,30 @@ void fprint128_num(FILE *file, __m128i var) {
     "%02x %02x %02x %02x %02x %02x %02x %02x  %02x %02x %02x %02x %02x %02x %02x %02x"
     , val[ 0], val[ 1], val[ 2], val[ 3], val[ 4], val[ 5], val[ 6], val[ 7]
     , val[ 8], val[ 9], val[10], val[11], val[12], val[13], val[14], val[15]);
+}
+
+void print_bits_8(uint8_t v) {
+  char *digits = "01";
+
+  for (int i = 0; i < 8; ++i) {
+    printf("%c", digits[(v >> i) & 1]);
+  }
+}
+
+void print_bits_16(uint16_t v) {
+  char *digits = "01";
+
+  for (int i = 0; i < 16; ++i) {
+    printf("%c", digits[(v >> i) & 1]);
+  }
+}
+
+void print_bits_32(uint32_t v) {
+  char *digits = "01";
+
+  for (int i = 0; i < 32; ++i) {
+    printf("%c", digits[(v >> i) & 1]);
+  }
 }
 
 void print_bits_64(uint64_t v) {
