@@ -23,12 +23,6 @@ import qualified System.IO                                  as IO
 {-# ANN module ("HLint: ignore Reduce duplication"  :: String) #-}
 {-# ANN module ("HLint: ignore Redundant do"        :: String) #-}
 
-zipPadded :: a -> b -> [a] -> [b] -> [(a, b)]
-zipPadded a b (c:cs) (d:ds) = (c, d):zipPadded a b cs ds
-zipPadded a b []     (d:ds) = (a, d):zipPadded a b [] ds
-zipPadded a b (c:cs) []     = (c, b):zipPadded a b cs []
-zipPadded _ _ []     []     = []
-
 runCreateIndex :: CreateIndexOptions -> IO ()
 runCreateIndex opts = do
   let filePath      = opts ^. L.filePath
@@ -40,11 +34,10 @@ runCreateIndex opts = do
     "simple" -> do
       IO.withFile filePath IO.ReadMode $ \hIn -> do
         contents <- LBS.resegmentPadded 512 <$> LBS.hGetContents hIn
-        let chunks = SIMPLE.makeIbs contents
-        let chunks2 = zipPadded BS.empty BS.empty (fmap (\(a, _, _) -> a) chunks) (SIMPLE.ibsToIndexByteStrings chunks)
+        let chunks = SIMPLE.makeIbBps contents
         IO.withFile outputIbFile IO.WriteMode $ \hIb -> do
           IO.withFile outputBpFile IO.WriteMode $ \hBp -> do
-            forM_ chunks2 $ \(ibBs, bpBs) -> do
+            forM_ chunks $ \(ibBs, bpBs) -> do
               BS.hPut hIb ibBs
               BS.hPut hBp bpBs
     "standard" -> do
