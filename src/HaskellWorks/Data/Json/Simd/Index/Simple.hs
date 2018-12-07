@@ -3,8 +3,6 @@
 
 module HaskellWorks.Data.Json.Simd.Index.Simple
   ( makeIbBps
-  , makeIbs
-  , ibsToIndexByteStrings
   ) where
 
 import Control.Monad.ST
