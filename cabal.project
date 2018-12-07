@@ -13,3 +13,6 @@ package hw-rankselect-base
 
 package hw-simd
   flags: +bmi2
+
+package hw-json-simd
+  flags: +avx2

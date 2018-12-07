@@ -2,8 +2,7 @@
 {-# LANGUAGE RankNTypes #-}
 
 module HaskellWorks.Data.Json.Simd.Index.Simple
-  ( makeIbs
-  , ibsToIndexByteStrings
+  ( makeIbBps
   ) where
 
 import Control.Monad.ST
@@ -20,10 +19,17 @@ import qualified Foreign.ForeignPtr.Unsafe                    as F
 import qualified Foreign.Marshal.Unsafe                       as F
 import qualified Foreign.Ptr                                  as F
 import qualified HaskellWorks.Data.Json.Simd.Internal.Foreign as F
+import qualified HaskellWorks.Data.Json.Simd.Internal.List    as L
 import qualified System.IO.Unsafe                             as IO
 
 {-# ANN module ("HLint: ignore Reduce duplication"  :: String) #-}
 {-# ANN module ("HLint: ignore Redundant do"        :: String) #-}
+
+makeIbBps :: LBS.ByteString -> [(BS.ByteString, BS.ByteString)]
+makeIbBps lbs = L.zipPadded BS.empty BS.empty ibs bps
+  where chunks  = makeIbs lbs
+        ibs     = fmap (\(a, _, _) -> a) chunks
+        bps     = ibsToIndexByteStrings chunks
 
 makeIbs :: LBS.ByteString -> [(BS.ByteString, BS.ByteString, BS.ByteString)]
 makeIbs lbs = F.unsafeLocalState $ do
