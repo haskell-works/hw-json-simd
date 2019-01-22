@@ -8,11 +8,11 @@
 
 #include "simd.h"
 
-extern uint32_t simd_transition_table_32[256];
-extern uint32_t simd_phi_table_32       [256];
+extern uint32_t hw_json_simd_transition_table_32[256];
+extern uint32_t hw_json_simd_phi_table_32       [256];
 
 void
-sm_process_chunk(
+hw_json_simd_sm_process_chunk(
     uint8_t *in_buffer,
     size_t in_length,
     uint32_t *inout_state,
@@ -21,16 +21,16 @@ sm_process_chunk(
 
   for (size_t i = 0; i < in_length; i += 1) {
     uint8_t w = in_buffer[i];
-    __m128i p = _mm_shuffle_epi8(_mm_set1_epi32(simd_phi_table_32[w]), s);
+    __m128i p = _mm_shuffle_epi8(_mm_set1_epi32(hw_json_simd_phi_table_32[w]), s);
     out_phi_buffer[i] = _mm_extract_epi32(p, 0);
-    s = _mm_shuffle_epi8(_mm_set1_epi32(simd_transition_table_32[w]), s);
+    s = _mm_shuffle_epi8(_mm_set1_epi32(hw_json_simd_transition_table_32[w]), s);
   }
 
   *inout_state = (uint32_t)_mm_extract_epi32(s, 0);
 }
 
 void
-sm_make_ib_op_cl_chunks(
+hw_json_simd_sm_make_ib_op_cl_chunks(
     uint8_t state,
     uint32_t *in_phis,
     size_t phi_length,
@@ -60,7 +60,7 @@ sm_make_ib_op_cl_chunks(
 }
 
 size_t
-sm_write_bits(
+hw_json_simd_sm_write_bits(
     uint64_t bits,
     size_t bits_len,
     uint64_t *remaining_bits,
@@ -68,7 +68,7 @@ sm_write_bits(
     uint64_t *out_buffer);
 
 size_t
-sm_write_bp_chunk(
+hw_json_simd_sm_write_bp_chunk(
     uint8_t *result_op,
     uint8_t *result_cl,
     size_t ib_bytes,
@@ -106,15 +106,15 @@ sm_write_bp_chunk(
     uint64_t ext_lo = _pext_u64(op_lo, ib_lo);
     uint64_t ext_hi = _pext_u64(op_hi, ib_hi);
 
-    w64s_ready += sm_write_bits(ext_lo, pc_ib_lo, remaining_bits, remaning_bits_len, w64_work_bp + w64s_ready);
-    w64s_ready += sm_write_bits(ext_hi, pc_ib_hi, remaining_bits, remaning_bits_len, w64_work_bp + w64s_ready);
+    w64s_ready += hw_json_simd_sm_write_bits(ext_lo, pc_ib_lo, remaining_bits, remaning_bits_len, w64_work_bp + w64s_ready);
+    w64s_ready += hw_json_simd_sm_write_bits(ext_hi, pc_ib_hi, remaining_bits, remaning_bits_len, w64_work_bp + w64s_ready);
   }
 
   return w64s_ready;
 }
 
 size_t
-sm_write_bits(
+hw_json_simd_sm_write_bits(
     uint64_t bits,
     size_t bits_len,
     uint64_t *remaining_bits,
@@ -138,7 +138,7 @@ sm_write_bits(
 }
 
 size_t
-sm_write_bp_chunk_final(
+hw_json_simd_sm_write_bp_chunk_final(
     uint64_t remaining_bits,
     size_t remaining_bits_len,
     uint64_t *out_buffer) {

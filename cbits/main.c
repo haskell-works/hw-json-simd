@@ -4,7 +4,7 @@
 #include <string.h>
 #include <immintrin.h>
 
-int sm_main(
+int hw_simd_json_sm_main(
     int argc,
     char **argv);
 
@@ -17,9 +17,9 @@ int main(
   }
   
   if (strcmp(argv[1], "sp") == 0) {
-    main_spliced(argc - 1, argv + 1);
+    hw_json_simd_main_spliced(argc - 1, argv + 1);
   } else if (strcmp(argv[1], "sm") == 0) {
-    sm_main(argc - 1, argv + 1);
+    hw_simd_json_sm_main(argc - 1, argv + 1);
   } else {
     fprintf(stderr, "Unrecognised command: %s\n", argv[1]);
     exit(1);
@@ -28,7 +28,7 @@ int main(
   return 0;
 }
 
-int sm_main(
+int hw_simd_json_sm_main(
     int argc,
     char **argv) {
   if (argc != 6) {
@@ -123,11 +123,11 @@ int sm_main(
 
     uint32_t chunk_state = state;
 
-    sm_process_chunk(buffer, bytes_read,
+    hw_json_simd_sm_process_chunk(buffer, bytes_read,
       &state,
       phi_buffer);
 
-    sm_make_ib_op_cl_chunks(chunk_state, phi_buffer, bytes_read,
+    hw_json_simd_sm_make_ib_op_cl_chunks(chunk_state, phi_buffer, bytes_read,
       ibs_buffer,
       ops_buffer,
       cls_buffer);
@@ -136,7 +136,7 @@ int sm_main(
 
     fwrite(ibs_buffer, 1, idx_bytes, ib_out);
 
-    size_t out_bp_bytes = sm_write_bp_chunk(
+    size_t out_bp_bytes = hw_json_simd_sm_write_bp_chunk(
       ops_buffer,
       cls_buffer,
       idx_bytes,
@@ -150,7 +150,7 @@ int sm_main(
     fflush(bp_out);
   }
 
-  sm_write_bp_chunk_final(remaining_bp_bits, remaining_bp_bits_len, out_bp_buffer);
+  hw_json_simd_sm_write_bp_chunk_final(remaining_bp_bits, remaining_bp_bits_len, out_bp_buffer);
 
   fprintf(stderr, "Final state %u\n", state);
 

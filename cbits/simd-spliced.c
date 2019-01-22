@@ -10,14 +10,14 @@
 #define W32_BUFFER_SIZE   (W8_BUFFER_SIZE / 4)
 #define W64_BUFFER_SIZE   (W8_BUFFER_SIZE / 8)
 
-typedef struct bp_state {
+typedef struct hw_json_simd_bp_state {
   uint64_t  remainder_bits_d;
   uint64_t  remainder_bits_a;
   uint64_t  remainder_bits_z;
   size_t    remainder_len;
-} bp_state_t;
+} hw_json_simd_bp_state_t;
 
-int main_spliced(
+int hw_json_simd_main_spliced(
     int argc,
     char **argv) {
   if (argc != 4) {
@@ -58,12 +58,11 @@ int main_spliced(
   uint8_t *bits_of_b = malloc(W32_BUFFER_SIZE); memset(bits_of_b, 0, W32_BUFFER_SIZE);
   uint8_t *bits_of_e = malloc(W32_BUFFER_SIZE); memset(bits_of_e, 0, W32_BUFFER_SIZE);
   uint8_t *bits_of_q = malloc(W32_BUFFER_SIZE); memset(bits_of_q, 0, W32_BUFFER_SIZE);
-  uint8_t *bits_of_w = malloc(W32_BUFFER_SIZE); memset(bits_of_q, 0, W32_BUFFER_SIZE);
 
   uint8_t result_ib[W8_BUFFER_SIZE / 8];
   uint8_t result_a [W8_BUFFER_SIZE / 8];
   uint8_t result_z [W8_BUFFER_SIZE / 8];
-  bp_state_t bp_state;
+  hw_json_simd_bp_state_t bp_state;
 
   uint64_t accum = 0;
 
@@ -99,7 +98,7 @@ int main_spliced(
       bytes_read = next_alignment;
     }
 
-    accum += process_chunk(buffer, bytes_read,
+    accum += hw_json_simd_process_chunk(buffer, bytes_read,
       bits_of_d,
       bits_of_a,
       bits_of_z,
@@ -118,7 +117,7 @@ int main_spliced(
 
     fwrite(result_ib, 1, ib_bytes, ib_out);
 
-    size_t out_bp_bytes = write_bp_chunk(
+    size_t out_bp_bytes = hw_json_simd_write_bp_chunk(
       result_ib,
       result_a,
       result_z,
@@ -132,7 +131,7 @@ int main_spliced(
     fflush(bp_out);
   }
 
-  write_bp_chunk_final(&bp_state, out_bp_buffer);
+  hw_json_simd_write_bp_chunk_final(&bp_state, out_bp_buffer);
 
   fwrite(out_bp_buffer, 2, sizeof(uint64_t), bp_out);
 
@@ -142,17 +141,17 @@ int main_spliced(
   return 0;
 }
 
-void init_bp_state(
-    bp_state_t *bp_state) {
+void hw_json_simd_init_bp_state(
+    hw_json_simd_bp_state_t *bp_state) {
   memset(bp_state, 0, sizeof(*bp_state));
 }
 
-size_t write_bp_chunk(
+size_t hw_json_simd_write_bp_chunk(
     uint8_t *result_ib,
     uint8_t *result_a,
     uint8_t *result_z,
     size_t ib_bytes,
-    bp_state_t *bp_state,
+    hw_json_simd_bp_state_t *bp_state,
     uint8_t *out_buffer) {
   uint64_t *w64_result_ib = (uint64_t *)result_ib;
   uint64_t *w64_result_a  = (uint64_t *)result_a;
@@ -220,8 +219,8 @@ size_t write_bp_chunk(
   return w64s_ready;
 }
 
-size_t write_bp_chunk_final(
-    bp_state_t *bp_state,
+size_t hw_json_simd_write_bp_chunk_final(
+    hw_json_simd_bp_state_t *bp_state,
     uint8_t *out_buffer) {
   uint64_t *w64_work_bp   = (uint64_t *)out_buffer;
 
@@ -252,7 +251,7 @@ size_t write_bp_chunk_final(
   return w64s_ready;
 }
 
-uint8_t escape_mask[2][256] =
+uint8_t hw_json_simd_escape_mask[2][256] =
   { { 0xff, 0xfd, 0xfb, 0xff, 0xf7, 0xf5, 0xff, 0xf7, 0xef, 0xed, 0xeb, 0xef, 0xff, 0xfd, 0xef, 0xff
     , 0xdf, 0xdd, 0xdb, 0xdf, 0xd7, 0xd5, 0xdf, 0xd7, 0xff, 0xfd, 0xfb, 0xff, 0xdf, 0xdd, 0xff, 0xdf
     , 0xbf, 0xbd, 0xbb, 0xbf, 0xb7, 0xb5, 0xbf, 0xb7, 0xaf, 0xad, 0xab, 0xaf, 0xbf, 0xbd, 0xaf, 0xbf
@@ -289,7 +288,7 @@ uint8_t escape_mask[2][256] =
     }
   };
 
-void summarise(
+void hw_json_simd_summarise(
     uint8_t *buffer,
     uint32_t *out_mask_d,
     uint32_t *out_mask_a,
@@ -306,10 +305,6 @@ void summarise(
   __m256i v_bytes_of_bracket_z  = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(']'));
   __m256i v_bytes_of_quote      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('"'));
   __m256i v_bytes_of_backslash  = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('\\'));
-  __m256i v_bytes_of_space      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(' '));
-  __m256i v_bytes_of_tab        = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('\t'));
-  __m256i v_bytes_of_cr         = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('\r'));
-  __m256i v_bytes_of_lf         = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8('\n'));
 
   uint32_t mask_comma     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_comma     );
   uint32_t mask_colon     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_colon     );
@@ -317,10 +312,6 @@ void summarise(
   uint32_t mask_brace_z   = (uint32_t)_mm256_movemask_epi8(v_bytes_of_brace_z   );
   uint32_t mask_bracket_a = (uint32_t)_mm256_movemask_epi8(v_bytes_of_bracket_a );
   uint32_t mask_bracket_z = (uint32_t)_mm256_movemask_epi8(v_bytes_of_bracket_z );
-  uint32_t mask_space     = (uint32_t)_mm256_movemask_epi8(v_bytes_of_space     );
-  uint32_t mask_tab       = (uint32_t)_mm256_movemask_epi8(v_bytes_of_tab       );
-  uint32_t mask_cr        = (uint32_t)_mm256_movemask_epi8(v_bytes_of_cr        );
-  uint32_t mask_lf        = (uint32_t)_mm256_movemask_epi8(v_bytes_of_lf        );
 
   *out_mask_d = mask_comma    | mask_colon;
   *out_mask_a = mask_brace_a  | mask_bracket_a;
@@ -350,7 +341,7 @@ void summarise(
 #endif
 }
 
-uint64_t bitwise_add(uint64_t a, uint64_t b, uint64_t *c) {
+uint64_t hw_json_simd_bitwise_add(uint64_t a, uint64_t b, uint64_t *c) {
   uint64_t d = a + b + *c;
 
   *c = (d <= a) & 1;
@@ -358,7 +349,7 @@ uint64_t bitwise_add(uint64_t a, uint64_t b, uint64_t *c) {
   return d;
 }
 
-uint64_t process_chunk(
+uint64_t hw_json_simd_process_chunk(
     uint8_t *in_buffer,
     size_t in_length,
     uint8_t *work_bits_of_d,       // Working buffer of minimum length ((in_length + 63) / 64)
@@ -399,7 +390,7 @@ uint64_t process_chunk(
   uint64_t accum = 0;
 
   for (size_t i = 0; i < m256_in_len; ++i) {
-    summarise(in_buffer + (i * 32),
+    hw_json_simd_summarise(in_buffer + (i * 32),
       w32_bits_of_d + i,
       w32_bits_of_a + i,
       w32_bits_of_z + i,
@@ -411,7 +402,7 @@ uint64_t process_chunk(
     char w8 = w8_bits_of_b[i];
     size_t j = (*last_trailing_ones) % 2;
     size_t k = (size_t)(uint8_t)w8;
-    char w8e = escape_mask[j][k];
+    char w8e = hw_json_simd_escape_mask[j][k];
     work_bits_of_e[i] = w8e;
     *last_trailing_ones = _lzcnt_u64(~(int64_t)w8);
   }
@@ -424,7 +415,7 @@ uint64_t process_chunk(
     uint64_t qas = _pdep_u64(0x5555555555555555 << ((*quote_odds_carry ) & 1), w64_bits_of_q_word);
     uint64_t qzs = _pdep_u64(0x5555555555555555 << ((*quote_evens_carry) & 1), w64_bits_of_q_word);
 
-    uint64_t quote_mask = bitwise_add(qas, ~qzs, quote_mask_carry);
+    uint64_t quote_mask = hw_json_simd_bitwise_add(qas, ~qzs, quote_mask_carry);
 
     uint64_t w64_d = quote_mask & w64_bits_of_d[i];
     uint64_t w64_a = quote_mask & w64_bits_of_a[i];

@@ -7,13 +7,13 @@
 #define W32_BUFFER_SIZE   (W8_BUFFER_SIZE / 4)
 #define W64_BUFFER_SIZE   (W8_BUFFER_SIZE / 8)
 
-typedef struct bp_state bp_state_t;
+typedef struct hw_json_simd_bp_state hw_json_simd_bp_state_t;
 
-int main_spliced(
+int hw_json_simd_main_spliced(
     int argc,
     char **argv);
 
-uint64_t process_chunk(
+uint64_t hw_json_simd_process_chunk(
     uint8_t *in_buffer,
     size_t in_length,
     uint8_t *work_bits_of_d,       // Working buffer of minimum length ((in_length + 63) / 64)
@@ -30,25 +30,25 @@ uint64_t process_chunk(
     uint8_t *result_a,
     uint8_t *result_z);
 
-void init_bp_state(
-    bp_state_t *bp_state);
+void hw_json_simd_init_bp_state(
+    hw_json_simd_bp_state_t *bp_state);
 
-size_t write_bp_chunk(
+size_t hw_json_simd_write_bp_chunk(
     uint8_t *result_ib,
     uint8_t *result_a,
     uint8_t *result_z,
     size_t ib_bytes,
-    bp_state_t *bp_state,
+    hw_json_simd_bp_state_t *bp_state,
     uint8_t *out_buffer);
 
-size_t write_bp_chunk_final(
-    bp_state_t *bp_state,
+size_t hw_json_simd_write_bp_chunk_final(
+    hw_json_simd_bp_state_t *bp_state,
     uint8_t *out_buffer);
 
 // ---
 
 size_t
-sm_write_bp_chunk(
+hw_json_simd_sm_write_bp_chunk(
     uint8_t *result_op,
     uint8_t *result_cl,
     size_t ib_bytes,
@@ -57,20 +57,20 @@ sm_write_bp_chunk(
     uint64_t *out_buffer);
 
 size_t
-sm_write_bp_chunk_final(
+hw_json_simd_sm_write_bp_chunk_final(
     uint64_t remaining_bits,
     size_t remaining_bits_len,
     uint64_t *out_buffer);
 
 void
-sm_process_chunk(
+hw_json_simd_sm_process_chunk(
     uint8_t *in_buffer,
     size_t in_length,
     uint32_t *inout_state,
     uint32_t *out_phi_buffer);
 
 void
-sm_make_ib_op_cl_chunks(
+hw_json_simd_sm_make_ib_op_cl_chunks(
     uint8_t state,
     uint32_t *in_phis,
     size_t phi_length,
