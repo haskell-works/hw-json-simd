@@ -127,7 +127,7 @@ int sm_main(
       &state,
       phi_buffer);
 
-    sm_make_ib_bp_chunks(chunk_state, phi_buffer, bytes_read,
+    sm_make_ib_op_cl_chunks(chunk_state, phi_buffer, bytes_read,
       ibs_buffer,
       ops_buffer,
       cls_buffer);
