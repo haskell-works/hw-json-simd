@@ -13,6 +13,7 @@ copyright:      2018 - 2019 John Ky
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
+tested-with:    GHC == 8.6.1, GHC == 8.4.3, GHC == 8.2.2
 extra-source-files:
     cbits/debug.h
     cbits/simd.h
@@ -42,13 +43,12 @@ flag sse42
   manual: False
   default: True
 
-common base                   { build-depends: base                   }
-common bytestring             { build-depends: bytestring             }
-common hw-json-simd           { build-depends: hw-json-simd           }
-common hw-prim                { build-depends: hw-prim                }
-common lens                   { build-depends: lens                   }
-common optparse-applicative   { build-depends: optparse-applicative   }
-common vector                 { build-depends: vector                 }
+common base                   { build-depends: base                 >= 4          && < 5      }
+common bytestring             { build-depends: bytestring           >= 0.10.6     && < 0.11   }
+common hw-prim                { build-depends: hw-prim              >= 0.6.2.21   && < 0.7    }
+common lens                   { build-depends: lens                 >= 4          && < 5      }
+common optparse-applicative   { build-depends: optparse-applicative >= 0.14       && < 0.15   }
+common vector                 { build-depends: vector               >= 0.12       && < 0.13   }
 
 common semigroups     { if (!impl(ghc >=8.0.1)) { build-depends: { semigroups   >= 0.8.4  && < 0.19 } } }
 common transformers   { if (!impl(ghc >=8.0.1)) { build-depends: { transformers >= 0.4    && < 0.6  } } }
@@ -66,12 +66,12 @@ library
       HaskellWorks.Data.Json.Simd.Internal.Index.Simple
       HaskellWorks.Data.Json.Simd.Internal.Index.Standard
       HaskellWorks.Data.Json.Simd.Internal.List
-  other-modules:
-      Paths_hw_json_simd
+  autogen-modules:  Paths_hw_json_simd
+  other-modules:    Paths_hw_json_simd
   hs-source-dirs:
       src
   ghc-options: -Wall
-  cc-options: -mssse3 -O3 -mlzcnt -mbmi2 -mavx2
+  cc-options: -mssse3 -mlzcnt -mbmi2 -mavx2
   include-dirs:
       cbits
   c-sources:
@@ -106,14 +106,14 @@ executable hw-json-simd
           , semigroups
           , vector
   main-is: Main.hs
+  autogen-modules:  Paths_hw_json_simd
   other-modules:
       App.Commands
       App.Commands.CreateIndex
       App.Commands.Types
       App.Lens
       Paths_hw_json_simd
-  hs-source-dirs:
-      app
+  hs-source-dirs:   app
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends: hw-json-simd
   if flag(sse42)
@@ -134,16 +134,14 @@ executable hw-json-simd
 test-suite hw-json-simd-test
   import:   base
           , bytestring
-          , hw-json-simd
           , hw-prim
           , lens
           , vector
   type: exitcode-stdio-1.0
   main-is: Spec.hs
-  other-modules:
-      Paths_hw_json_simd
-  hs-source-dirs:
-      test
+  autogen-modules:  Paths_hw_json_simd
+  other-modules:    Paths_hw_json_simd
+  hs-source-dirs:   test
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends: hw-json-simd
   if flag(sse42)
