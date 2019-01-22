@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-inline void fprint256_num(FILE *file, __m256i var) {
+inline void hw_simd_json_fprint256_num(FILE *file, __m256i var) {
   uint8_t *val = (uint8_t*)&var;
   fprintf(file,
     "%02x %02x %02x %02x %02x %02x %02x %02x  %02x %02x %02x %02x %02x %02x %02x %02x  "
@@ -14,7 +14,7 @@ inline void fprint256_num(FILE *file, __m256i var) {
     , val[24], val[25], val[26], val[27], val[28], val[29], val[30], val[31]);
 }
 
-inline void fprint128_num(FILE *file, __m128i var) {
+inline void hw_simd_json_fprint128_num(FILE *file, __m128i var) {
   uint8_t *val = (uint8_t*)&var;
   fprintf(file,
     "%02x %02x %02x %02x %02x %02x %02x %02x  %02x %02x %02x %02x %02x %02x %02x %02x"
@@ -22,15 +22,15 @@ inline void fprint128_num(FILE *file, __m128i var) {
     , val[ 8], val[ 9], val[10], val[11], val[12], val[13], val[14], val[15]);
 }
 
-inline void print256_num(__m256i var) {
-  fprint256_num(stdout, var);
+inline void hw_simd_json_print256_num(__m256i var) {
+  hw_simd_json_fprint256_num(stdout, var);
 }
 
-inline void print128_num(__m128i var) {
-  fprint128_num(stdout, var);
+inline void hw_simd_json_print128_num(__m128i var) {
+  hw_simd_json_fprint128_num(stdout, var);
 }
 
-inline void print_bits_8(uint8_t v) {
+inline void hw_simd_json_print_bits_8(uint8_t v) {
   char *digits = "01";
 
   for (int i = 0; i < 8; ++i) {
@@ -38,7 +38,7 @@ inline void print_bits_8(uint8_t v) {
   }
 }
 
-inline void print_bits_16(uint16_t v) {
+inline void hw_simd_json_print_bits_16(uint16_t v) {
   char *digits = "01";
 
   for (int i = 0; i < 16; ++i) {
@@ -46,7 +46,7 @@ inline void print_bits_16(uint16_t v) {
   }
 }
 
-inline void print_bits_32(uint32_t v) {
+inline void hw_simd_json_print_bits_32(uint32_t v) {
   char *digits = "01";
 
   for (int i = 0; i < 32; ++i) {
@@ -54,7 +54,7 @@ inline void print_bits_32(uint32_t v) {
   }
 }
 
-inline void print_bits_64(uint64_t v) {
+inline void hw_simd_json_print_bits_64(uint64_t v) {
   char *digits = "01";
 
   for (int i = 0; i < 64; ++i) {
@@ -62,22 +62,22 @@ inline void print_bits_64(uint64_t v) {
   }
 }
 
-inline void print_bits_128(__m128i v) {
+inline void hw_simd_json_print_bits_128(__m128i v) {
   for (int i = 0; i < 2; ++i) {
     if (i > 0) {
       printf("-");
     }
 
-    print_bits_64(_mm_extract_epi64(v, i));
+    hw_simd_json_print_bits_64(_mm_extract_epi64(v, i));
   }
 }
 
-inline void print_bits_256(__m256i v) {
+inline void hw_simd_json_print_bits_256(__m256i v) {
   for (int i = 0; i < 4; ++i) {
     if (i > 0) {
       printf("-");
     }
 
-    print_bits_64(_mm256_extract_epi64(v, i));
+    hw_simd_json_print_bits_64(_mm256_extract_epi64(v, i));
   }
 }
