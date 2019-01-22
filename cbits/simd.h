@@ -7,16 +7,6 @@
 #define W32_BUFFER_SIZE   (W8_BUFFER_SIZE / 4)
 #define W64_BUFFER_SIZE   (W8_BUFFER_SIZE / 8)
 
-void print256_num(__m256i var);
-
-void fprint256_num(FILE *file, __m256i var);
-
-void print128_num(__m128i var);
-
-void fprint128_num(FILE *file, __m128i var);
-
-void print_bits_64(uint64_t v);
-
 typedef struct bp_state bp_state_t;
 
 int main_spliced(
