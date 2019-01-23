@@ -42,7 +42,23 @@ flag sse42
   manual: False
   default: True
 
+common base                   { build-depends: base                   }
+common bytestring             { build-depends: bytestring             }
+common hw-json-simd           { build-depends: hw-json-simd           }
+common hw-prim                { build-depends: hw-prim                }
+common lens                   { build-depends: lens                   }
+common optparse-applicative   { build-depends: optparse-applicative   }
+common vector                 { build-depends: vector                 }
+
+common semigroups     { if (!impl(ghc >=8.0.1)) { build-depends: { semigroups   >= 0.8.4  && < 0.19 } } }
+common transformers   { if (!impl(ghc >=8.0.1)) { build-depends: { transformers >= 0.4    && < 0.6  } } }
+
 library
+  import:   base
+          , bytestring
+          , hw-prim
+          , lens
+          , vector
   exposed-modules:
       HaskellWorks.Data.Json.Simd.Index.Simple
       HaskellWorks.Data.Json.Simd.Index.Standard
@@ -66,12 +82,6 @@ library
       cbits/simd-transition-table-32.c
   build-tools:
       c2hs
-  build-depends:
-      base >=4.7 && <5
-    , bytestring
-    , hw-prim
-    , lens
-    , vector
   if flag(sse42)
     ghc-options: -msse4.2
     cc-options: -msse4.2
@@ -85,13 +95,16 @@ library
     ghc-options: -mbmi2 -msse4.2
   if (impl(ghc >=8.0.1))
     ghc-options: -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
-  if (!impl(ghc >=8.0.1))
-    build-depends:
-        semigroups >=0.8.4 && <0.19
-      , transformers >=0.4 && <0.6
   default-language: Haskell2010
 
 executable hw-json-simd
+  import:   base
+          , bytestring
+          , hw-prim
+          , lens
+          , optparse-applicative
+          , semigroups
+          , vector
   main-is: Main.hs
   other-modules:
       App.Commands
@@ -102,14 +115,7 @@ executable hw-json-simd
   hs-source-dirs:
       app
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , bytestring
-    , hw-json-simd
-    , hw-prim
-    , lens
-    , optparse-applicative
-    , vector
+  build-depends: hw-json-simd
   if flag(sse42)
     ghc-options: -msse4.2
     cc-options: -msse4.2
@@ -123,13 +129,15 @@ executable hw-json-simd
     ghc-options: -mbmi2 -msse4.2
   if (impl(ghc >=8.0.1))
     ghc-options: -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
-  if (!impl(ghc >=8.0.1))
-    build-depends:
-        semigroups >=0.8.4 && <0.19
-      , transformers >=0.4 && <0.6
   default-language: Haskell2010
 
 test-suite hw-json-simd-test
+  import:   base
+          , bytestring
+          , hw-json-simd
+          , hw-prim
+          , lens
+          , vector
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
@@ -137,13 +145,7 @@ test-suite hw-json-simd-test
   hs-source-dirs:
       test
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , bytestring
-    , hw-json-simd
-    , hw-prim
-    , lens
-    , vector
+  build-depends: hw-json-simd
   if flag(sse42)
     ghc-options: -msse4.2
     cc-options: -msse4.2
