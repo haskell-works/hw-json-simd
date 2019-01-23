@@ -74,14 +74,13 @@ library
     ghc-options: -msse4.2
     cc-options: -msse4.2
   if flag(bmi2)
-    cc-options: -mbmi2 -DBMI2_ENABLED
+    cc-options: -mbmi2
   if (flag(bmi2)) && (impl(ghc >=8.4.1))
     ghc-options: -mbmi2 -msse4.2
   if flag(avx2)
-    cc-options: -mavx2 -DAVX2_ENABLED
+    cc-options: -mavx2
   if (flag(avx2)) && (impl(ghc >=8.4.1))
     ghc-options: -mbmi2 -msse4.2
-    cpp-options: -DBMI2_ENABLED -DAVX2_ENABLED
   if (impl(ghc >=8.0.1))
     ghc-options: -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   if (!impl(ghc >=8.0.1))
@@ -113,14 +112,13 @@ executable hw-json-simd
     ghc-options: -msse4.2
     cc-options: -msse4.2
   if flag(bmi2)
-    cc-options: -mbmi2 -DBMI2_ENABLED
+    cc-options: -mbmi2
   if (flag(bmi2)) && (impl(ghc >=8.4.1))
     ghc-options: -mbmi2 -msse4.2
   if flag(avx2)
-    cc-options: -mavx2 -DAVX2_ENABLED
+    cc-options: -mavx2
   if (flag(avx2)) && (impl(ghc >=8.4.1))
     ghc-options: -mbmi2 -msse4.2
-    cpp-options: -DBMI2_ENABLED -DAVX2_ENABLED
   if (impl(ghc >=8.0.1))
     ghc-options: -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   if (!impl(ghc >=8.0.1))
@@ -148,14 +146,13 @@ test-suite hw-json-simd-test
     ghc-options: -msse4.2
     cc-options: -msse4.2
   if flag(bmi2)
-    cc-options: -mbmi2 -DBMI2_ENABLED
+    cc-options: -mbmi2
   if (flag(bmi2)) && (impl(ghc >=8.4.1))
     ghc-options: -mbmi2 -msse4.2
   if flag(avx2)
-    cc-options: -mavx2 -DAVX2_ENABLED
+    cc-options: -mavx2
   if (flag(avx2)) && (impl(ghc >=8.4.1))
     ghc-options: -mbmi2 -msse4.2
-    cpp-options: -DBMI2_ENABLED -DAVX2_ENABLED
   if (impl(ghc >=8.0.1))
     ghc-options: -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   if (!impl(ghc >=8.0.1))
