@@ -91,6 +91,13 @@ jobs:
       - image: quay.io/haskell_works/ghc-8.2.2
     <<: *cabalbuild
 
+  ghc-8.0.2:
+    environment:
+      - GHC: "ghc8.0.2"
+    docker:
+      - image: quay.io/haskell_works/ghc-8.0.2
+    <<: *cabalbuild
+
   ghc-7.10.3:
     environment:
       - GHC: "ghc7.10.3"
@@ -167,12 +174,14 @@ workflows:
       - ghc-8.6.3
       - ghc-8.4.3
       - ghc-8.2.2
+      - ghc-8.0.2
       - ghc-7.10.3
       - checked-builds:
           requires:
             - ghc-8.6.3
             - ghc-8.4.3
             - ghc-8.2.2
+            - ghc-8.0.2
             - ghc-7.10.3
           filters:
             branches:
