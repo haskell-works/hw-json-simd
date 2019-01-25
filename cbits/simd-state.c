@@ -8,9 +8,6 @@
 
 #include "simd.h"
 
-extern uint32_t hw_json_simd_transition_table_32[256];
-extern uint32_t hw_json_simd_phi_table_32       [256];
-
 void
 hw_json_simd_sm_process_chunk(
     uint8_t *in_buffer,

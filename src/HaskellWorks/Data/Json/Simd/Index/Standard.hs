@@ -5,6 +5,7 @@
 
 module HaskellWorks.Data.Json.Simd.Index.Standard
   ( makeIbBps
+  , enabled
   ) where
 
 import Control.Monad
@@ -19,6 +20,7 @@ import qualified Foreign.ForeignPtr.Unsafe                    as F
 import qualified Foreign.Marshal.Unsafe                       as F
 import qualified Foreign.Ptr                                  as F
 import qualified Foreign.Storable                             as F
+import qualified HaskellWorks.Data.Json.Simd.Capabilities     as C
 import qualified HaskellWorks.Data.Json.Simd.Internal.Foreign as F
 import qualified System.IO.Unsafe                             as IO
 
@@ -99,3 +101,6 @@ makeIbBps lbs = F.unsafeLocalState $ do
                 )
           rs <- IO.unsafeInterleaveIO $ go wb ws fptrState fptrRemBits fptrRemBitsLen bss
           return (r:rs)
+
+enabled :: Bool
+enabled = C.avx_2 && C.sse_4_2 && C.bmi_2

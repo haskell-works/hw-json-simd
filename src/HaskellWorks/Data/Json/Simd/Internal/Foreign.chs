@@ -4,7 +4,7 @@
 module HaskellWorks.Data.Json.Simd.Internal.Foreign where
 
 import Foreign
-import Foreign.C.Types (CChar(..), CSize(..))
+import System.IO.Unsafe
 
 #include "../cbits/simd.h"
 
@@ -12,6 +12,21 @@ type UInt8  = {#type uint8_t #}
 type UInt32 = {#type uint32_t#}
 type UInt64 = {#type uint64_t#}
 type Size   = {#type size_t  #}
+
+enabled_avx_2 :: IO Int
+enabled_avx_2 = fromIntegral <$> do
+  {#call unsafe hw_json_simd_avx2_enabled as c_hw_json_simd_avx2_enabled#}
+{-# NOINLINE enabled_avx_2 #-}
+
+enabled_sse_4_2 :: IO Int
+enabled_sse_4_2 = fromIntegral <$> do
+  {#call unsafe hw_json_simd_sse4_2_enabled as c_hw_json_simd_sse4_2_enabled#}
+{-# NOINLINE enabled_sse_4_2 #-}
+
+enabled_bmi_2 :: IO Int
+enabled_bmi_2 = fromIntegral <$> do
+  {#call unsafe hw_json_simd_bmi2_enabled as c_hw_json_simd_bmi2_enabled#}
+{-# NOINLINE enabled_bmi_2 #-}
 
 processChunk :: ()
   => Ptr UInt8    -- in_buffer

@@ -9,6 +9,15 @@
 
 typedef struct hw_json_simd_bp_state hw_json_simd_bp_state_t;
 
+int hw_json_simd_avx2_enabled();
+
+int hw_json_simd_bmi2_enabled();
+
+int hw_json_simd_sse4_2_enabled();
+
+extern uint32_t hw_json_simd_transition_table_32[256];
+extern uint32_t hw_json_simd_phi_table_32       [256];
+
 int hw_json_simd_main_spliced(
     int argc,
     char **argv);
