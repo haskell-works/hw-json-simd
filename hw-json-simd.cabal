@@ -17,6 +17,7 @@ tested-with:    GHC == 8.6.1, GHC == 8.4.3, GHC == 8.2.2
 extra-source-files:
     cbits/debug.h
     cbits/simd.h
+    cbits/simd.c
     cbits/simd-spliced.c
     cbits/simd-state.c
     cbits/simd-phi-table-32.c
@@ -60,6 +61,7 @@ library
           , lens
           , vector
   exposed-modules:
+      HaskellWorks.Data.Json.Simd.Capabilities
       HaskellWorks.Data.Json.Simd.Index.Simple
       HaskellWorks.Data.Json.Simd.Index.Standard
       HaskellWorks.Data.Json.Simd.Internal.Foreign
@@ -76,6 +78,7 @@ library
       cbits
   c-sources:
       cbits/debug.c
+      cbits/simd.c
       cbits/simd-spliced.c
       cbits/simd-state.c
       cbits/simd-phi-table-32.c
@@ -109,6 +112,7 @@ executable hw-json-simd
   autogen-modules:  Paths_hw_json_simd
   other-modules:
       App.Commands
+      App.Commands.Capabilities
       App.Commands.CreateIndex
       App.Commands.Types
       App.Lens

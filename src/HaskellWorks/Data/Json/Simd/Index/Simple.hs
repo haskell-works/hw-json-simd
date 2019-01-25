@@ -3,6 +3,7 @@
 
 module HaskellWorks.Data.Json.Simd.Index.Simple
   ( makeIbBps
+  , enabled
   ) where
 
 import Control.Monad.ST
@@ -18,6 +19,7 @@ import qualified Foreign.ForeignPtr                           as F
 import qualified Foreign.ForeignPtr.Unsafe                    as F
 import qualified Foreign.Marshal.Unsafe                       as F
 import qualified Foreign.Ptr                                  as F
+import qualified HaskellWorks.Data.Json.Simd.Capabilities     as C
 import qualified HaskellWorks.Data.Json.Simd.Internal.Foreign as F
 import qualified HaskellWorks.Data.Json.Simd.Internal.List    as L
 import qualified System.IO.Unsafe                             as IO
@@ -135,3 +137,6 @@ stepToByteString state (Step step size) = F.unsafeLocalState $ do
   let bpVm = DVSM.unsafeFromForeignPtr (F.castForeignPtr bpFptr) 0 size
   w64Size <- stToIO $ step state bpVm
   return (BSI.PS bpFptr 0 (w64Size * 8))
+
+enabled :: Bool
+enabled = C.avx_2 && C.sse_4_2 && C.bmi_2
