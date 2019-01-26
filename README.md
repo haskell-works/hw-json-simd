@@ -5,7 +5,7 @@ This library/tool will generate semi-indexes on JSON files as per the paper:
 
 ## The command line tool
 
-For a given JSON file, the `hw-json-simd` it will generate two semi-index
+For a given JSON file, `hw-json-simd` will generate two semi-index
 files, which both together can be loaded into a single in-memory semi-index.
 
 The semi-index files can be generated using two methods, which will be called
