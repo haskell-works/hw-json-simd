@@ -8,17 +8,17 @@ import App.Commands.Types
 import Control.Lens
 import Control.Monad
 import Data.Maybe
-import Data.Semigroup      ((<>))
-import Options.Applicative hiding (columns)
+import Data.Semigroup                             ((<>))
+import HaskellWorks.Data.Json.Simd.Index.Simple
+import HaskellWorks.Data.Json.Simd.Index.Standard
+import Options.Applicative                        hiding (columns)
 
-import qualified App.Lens                                   as L
-import qualified Data.ByteString                            as BS
-import qualified Data.ByteString.Lazy                       as LBS
-import qualified HaskellWorks.Data.ByteString.Lazy          as LBS
-import qualified HaskellWorks.Data.Json.Simd.Index.Simple   as SIMPLE
-import qualified HaskellWorks.Data.Json.Simd.Index.Standard as STANDARD
-import qualified System.Exit                                as IO
-import qualified System.IO                                  as IO
+import qualified App.Lens                          as L
+import qualified Data.ByteString                   as BS
+import qualified Data.ByteString.Lazy              as LBS
+import qualified HaskellWorks.Data.ByteString.Lazy as LBS
+import qualified System.Exit                       as IO
+import qualified System.IO                         as IO
 
 {-# ANN module ("HLint: ignore Reduce duplication"  :: String) #-}
 {-# ANN module ("HLint: ignore Redundant do"        :: String) #-}
@@ -34,7 +34,7 @@ runCreateIndex opts = do
     "simple" -> do
       IO.withFile filePath IO.ReadMode $ \hIn -> do
         contents <- LBS.resegmentPadded 512 <$> LBS.hGetContents hIn
-        let chunks = SIMPLE.makeIbBps contents
+        let chunks = makeSimpleJsonIbBpsUnsafe contents
         IO.withFile outputIbFile IO.WriteMode $ \hIb -> do
           IO.withFile outputBpFile IO.WriteMode $ \hBp -> do
             forM_ chunks $ \(ibBs, bpBs) -> do
@@ -43,7 +43,7 @@ runCreateIndex opts = do
     "standard" -> do
       IO.withFile filePath IO.ReadMode $ \hIn -> do
         contents <- LBS.resegmentPadded 512 <$> LBS.hGetContents hIn
-        let chunks = STANDARD.makeIbBps contents
+        let chunks = makeStandardJsonIbBpsUnsafe contents
         IO.withFile outputIbFile IO.WriteMode $ \hIb -> do
           IO.withFile outputBpFile IO.WriteMode $ \hBp -> do
             forM_ chunks $ \(ibBs, bpBs) -> do

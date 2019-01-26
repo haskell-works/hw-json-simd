@@ -4,8 +4,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module HaskellWorks.Data.Json.Simd.Index.Standard
-  ( makeIbBps
-  , enabled
+  ( makeStandardJsonIbBps
+  , makeStandardJsonIbBpsUnsafe
+  , enabledMakeStandardJsonIbBps
   ) where
 
 import Control.Monad
@@ -27,8 +28,13 @@ import qualified System.IO.Unsafe                             as IO
 {-# ANN module ("HLint: ignore Reduce duplication"  :: String) #-}
 {-# ANN module ("HLint: ignore Redundant do"        :: String) #-}
 
-makeIbBps :: LBS.ByteString -> [(BS.ByteString, BS.ByteString)]
-makeIbBps lbs = F.unsafeLocalState $ do
+makeStandardJsonIbBps :: LBS.ByteString -> Either String [(BS.ByteString, BS.ByteString)]
+makeStandardJsonIbBps lbs = if enabledMakeStandardJsonIbBps
+  then Right (makeStandardJsonIbBpsUnsafe lbs)
+  else Left "makeStandardJsonIbBps function is disabled"
+
+makeStandardJsonIbBpsUnsafe :: LBS.ByteString -> [(BS.ByteString, BS.ByteString)]
+makeStandardJsonIbBpsUnsafe lbs = F.unsafeLocalState $ do
   wb <- allocWorkBuffers (32 * 1024 * 1204)
   ws <- newWorkState 0
   fptrState       :: F.ForeignPtr F.UInt32  <- F.mallocForeignPtr
@@ -102,5 +108,5 @@ makeIbBps lbs = F.unsafeLocalState $ do
           rs <- IO.unsafeInterleaveIO $ go wb ws fptrState fptrRemBits fptrRemBitsLen bss
           return (r:rs)
 
-enabled :: Bool
-enabled = C.avx_2 && C.sse_4_2 && C.bmi_2
+enabledMakeStandardJsonIbBps :: Bool
+enabledMakeStandardJsonIbBps = C.avx_2 && C.sse_4_2 && C.bmi_2

@@ -2,8 +2,9 @@
 {-# LANGUAGE RankNTypes #-}
 
 module HaskellWorks.Data.Json.Simd.Index.Simple
-  ( makeIbBps
-  , enabled
+  ( makeSimpleJsonIbBps
+  , makeSimpleJsonIbBpsUnsafe
+  , enabledMakeSimpleJsonIbBps
   ) where
 
 import Control.Monad.ST
@@ -27,8 +28,13 @@ import qualified System.IO.Unsafe                             as IO
 {-# ANN module ("HLint: ignore Reduce duplication"  :: String) #-}
 {-# ANN module ("HLint: ignore Redundant do"        :: String) #-}
 
-makeIbBps :: LBS.ByteString -> [(BS.ByteString, BS.ByteString)]
-makeIbBps lbs = L.zipPadded BS.empty BS.empty ibs bps
+makeSimpleJsonIbBps :: LBS.ByteString -> Either String [(BS.ByteString, BS.ByteString)]
+makeSimpleJsonIbBps lbs = if enabledMakeSimpleJsonIbBps
+  then Right (makeSimpleJsonIbBpsUnsafe lbs)
+  else Left "makeSimpleJsonIbBps function is disabled"
+
+makeSimpleJsonIbBpsUnsafe :: LBS.ByteString -> [(BS.ByteString, BS.ByteString)]
+makeSimpleJsonIbBpsUnsafe lbs = L.zipPadded BS.empty BS.empty ibs bps
   where chunks  = makeIbs lbs
         ibs     = fmap (\(a, _, _) -> a) chunks
         bps     = ibsToIndexByteStrings chunks
@@ -138,5 +144,5 @@ stepToByteString state (Step step size) = F.unsafeLocalState $ do
   w64Size <- stToIO $ step state bpVm
   return (BSI.PS bpFptr 0 (w64Size * 8))
 
-enabled :: Bool
-enabled = C.avx_2 && C.sse_4_2 && C.bmi_2
+enabledMakeSimpleJsonIbBps :: Bool
+enabledMakeSimpleJsonIbBps = C.avx_2 && C.sse_4_2 && C.bmi_2
