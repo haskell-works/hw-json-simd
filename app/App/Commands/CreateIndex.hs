@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module App.Commands.CreateIndex
@@ -43,12 +44,16 @@ runCreateIndex opts = do
     "standard" -> do
       IO.withFile filePath IO.ReadMode $ \hIn -> do
         contents <- LBS.resegmentPadded 512 <$> LBS.hGetContents hIn
-        let chunks = makeStandardJsonIbBpsUnsafe contents
-        IO.withFile outputIbFile IO.WriteMode $ \hIb -> do
-          IO.withFile outputBpFile IO.WriteMode $ \hBp -> do
-            forM_ chunks $ \(ibBs, bpBs) -> do
-              BS.hPut hIb ibBs
-              BS.hPut hBp bpBs
+        case makeStandardJsonIbBps contents of
+          Right chunks -> do
+            IO.withFile outputIbFile IO.WriteMode $ \hIb -> do
+              IO.withFile outputBpFile IO.WriteMode $ \hBp -> do
+                forM_ chunks $ \(ibBs, bpBs) -> do
+                  BS.hPut hIb ibBs
+                  BS.hPut hBp bpBs
+          Left msg -> do
+            IO.hPutStrLn IO.stderr $ "Unable to create index: " <> show msg
+            IO.exitFailure
     _ -> do
       IO.hPutStrLn IO.stderr $ "Unrecognised method: " <> show method
       IO.exitFailure
