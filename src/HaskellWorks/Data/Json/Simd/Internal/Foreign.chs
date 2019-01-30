@@ -4,7 +4,6 @@
 module HaskellWorks.Data.Json.Simd.Internal.Foreign where
 
 import Foreign
-import System.IO.Unsafe
 
 #include "../cbits/simd.h"
 

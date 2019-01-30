@@ -51,15 +51,36 @@ common lens                   { build-depends: lens                 >= 4        
 common optparse-applicative   { build-depends: optparse-applicative >= 0.14       && < 0.15   }
 common vector                 { build-depends: vector               >= 0.12       && < 0.13   }
 
-common semigroups     { if (!impl(ghc >=8.0.1)) { build-depends: { semigroups   >= 0.8.4  && < 0.19 } } }
-common transformers   { if (!impl(ghc >=8.0.1)) { build-depends: { transformers >= 0.4    && < 0.6  } } }
+common semigroups     { if (!impl(ghc >= 8.0.1))  { build-depends: { semigroups   >= 0.8.4  && < 0.19 } } }
+common transformers   { if (!impl(ghc >= 8.0.1))  { build-depends: { transformers >= 0.4    && < 0.6  } } }
+
+common config
+  ghc-options: -Wall
+  default-language: Haskell2010
+  if impl(ghc >= 8.0.1)
+    ghc-options: -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  if flag(sse42)
+    ghc-options: -msse4.2
+    cc-options: -msse4.2
+  if flag(bmi2)
+    cc-options: -mbmi2
+    if impl(ghc >= 8.4.1)
+      ghc-options: -mbmi2
+  if flag(avx2)
+    cc-options: -mavx2
 
 library
-  import:   base
+  import:   base, config
           , bytestring
           , hw-prim
           , lens
           , vector
+  autogen-modules:  Paths_hw_json_simd
+  other-modules:    Paths_hw_json_simd
+  hs-source-dirs:   src
+  cc-options:       -mssse3 -mlzcnt -mbmi2 -mavx2
+  include-dirs:     cbits
+  build-tools:      c2hs
   exposed-modules:
       HaskellWorks.Data.Json.Simd.Capabilities
       HaskellWorks.Data.Json.Simd.Index.Simple
@@ -68,14 +89,6 @@ library
       HaskellWorks.Data.Json.Simd.Internal.Index.Simple
       HaskellWorks.Data.Json.Simd.Internal.Index.Standard
       HaskellWorks.Data.Json.Simd.Internal.List
-  autogen-modules:  Paths_hw_json_simd
-  other-modules:    Paths_hw_json_simd
-  hs-source-dirs:
-      src
-  ghc-options: -Wall
-  cc-options: -mssse3 -mlzcnt -mbmi2 -mavx2
-  include-dirs:
-      cbits
   c-sources:
       cbits/debug.c
       cbits/simd.c
@@ -83,33 +96,20 @@ library
       cbits/simd-state.c
       cbits/simd-phi-table-32.c
       cbits/simd-transition-table-32.c
-  build-tools:
-      c2hs
-  if flag(sse42)
-    ghc-options: -msse4.2
-    cc-options: -msse4.2
-  if flag(bmi2)
-    cc-options: -mbmi2
-  if (flag(bmi2)) && (impl(ghc >=8.4.1))
-    ghc-options: -mbmi2 -msse4.2
-  if flag(avx2)
-    cc-options: -mavx2
-  if (flag(avx2)) && (impl(ghc >=8.4.1))
-    ghc-options: -mbmi2 -msse4.2
-  if (impl(ghc >=8.0.1))
-    ghc-options: -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
-  default-language: Haskell2010
-
+  
 executable hw-json-simd
-  import:   base
+  import:   base, config
           , bytestring
           , hw-prim
           , lens
           , optparse-applicative
           , semigroups
           , vector
-  main-is: Main.hs
+  main-is:          Main.hs
   autogen-modules:  Paths_hw_json_simd
+  hs-source-dirs:   app
+  build-depends:    hw-json-simd
+  ghc-options:      -threaded -rtsopts -with-rtsopts=-N
   other-modules:
       App.Commands
       App.Commands.Capabilities
@@ -117,52 +117,19 @@ executable hw-json-simd
       App.Commands.Types
       App.Lens
       Paths_hw_json_simd
-  hs-source-dirs:   app
-  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
-  build-depends: hw-json-simd
-  if flag(sse42)
-    ghc-options: -msse4.2
-    cc-options: -msse4.2
-  if flag(bmi2)
-    cc-options: -mbmi2
-  if (flag(bmi2)) && (impl(ghc >=8.4.1))
-    ghc-options: -mbmi2 -msse4.2
-  if flag(avx2)
-    cc-options: -mavx2
-  if (flag(avx2)) && (impl(ghc >=8.4.1))
-    ghc-options: -mbmi2 -msse4.2
-  if (impl(ghc >=8.0.1))
-    ghc-options: -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
-  default-language: Haskell2010
 
 test-suite hw-json-simd-test
-  import:   base
+  import:   base, config
           , bytestring
           , hw-prim
           , lens
+          , semigroups
+          , transformers
           , vector
-  type: exitcode-stdio-1.0
-  main-is: Spec.hs
+  type:             exitcode-stdio-1.0
+  main-is:          Spec.hs
   autogen-modules:  Paths_hw_json_simd
   other-modules:    Paths_hw_json_simd
   hs-source-dirs:   test
-  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
-  build-depends: hw-json-simd
-  if flag(sse42)
-    ghc-options: -msse4.2
-    cc-options: -msse4.2
-  if flag(bmi2)
-    cc-options: -mbmi2
-  if (flag(bmi2)) && (impl(ghc >=8.4.1))
-    ghc-options: -mbmi2 -msse4.2
-  if flag(avx2)
-    cc-options: -mavx2
-  if (flag(avx2)) && (impl(ghc >=8.4.1))
-    ghc-options: -mbmi2 -msse4.2
-  if (impl(ghc >=8.0.1))
-    ghc-options: -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
-  if (!impl(ghc >=8.0.1))
-    build-depends:
-        semigroups >=0.8.4 && <0.19
-      , transformers >=0.4 && <0.6
-  default-language: Haskell2010
+  ghc-options:      -threaded -rtsopts -with-rtsopts=-N
+  build-depends:    hw-json-simd
