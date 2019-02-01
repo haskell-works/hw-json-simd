@@ -1,5 +1,6 @@
+#include "intrinsics.h"
+
 #include <stdint.h>
-#include <immintrin.h>
 
 uint32_t hw_json_simd_phi_table_32[] =
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000
