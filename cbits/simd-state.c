@@ -34,6 +34,7 @@ hw_json_simd_sm_make_ib_op_cl_chunks(
     uint8_t *out_ibs,
     uint8_t *out_ops,
     uint8_t *out_cls) {
+#if defined(__AVX2__)
   uint32_t state_offset = state * 8;
 
   uint32_t ib_offset = 5;
@@ -54,6 +55,10 @@ hw_json_simd_sm_make_ib_op_cl_chunks(
     out_ops[j] = all_ops;
     out_cls[j] = all_cls;
   }
+#else
+  fprintf(stderr, "Invalid call to hw_json_simd_sm_make_ib_op_cl_chunks: Require -mavx2 flag to be defined");
+  exit(1);
+#endif//defined(__AVX2__)
 }
 
 size_t
@@ -72,6 +77,7 @@ hw_json_simd_sm_write_bp_chunk(
     uint64_t *remaining_bits,
     size_t *remaning_bits_len,
     uint64_t *out_buffer) {
+#if defined(__BMI2__)
   uint64_t *w64_result_op = (uint64_t *)result_op;
   uint64_t *w64_result_cl = (uint64_t *)result_cl;
   uint64_t *w64_work_bp   = (uint64_t *)out_buffer;
@@ -108,6 +114,11 @@ hw_json_simd_sm_write_bp_chunk(
   }
 
   return w64s_ready;
+#else
+  fprintf(stderr, "Invalid call to hw_json_simd_sm_write_bp_chunk: Require -mbmi2 flag to be defined");
+  exit(1);
+  return -1;
+#endif//defined(__BMI2__)
 }
 
 size_t

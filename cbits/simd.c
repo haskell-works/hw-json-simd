@@ -17,7 +17,7 @@ int hw_json_simd_bmi2_enabled() {
 }
 
 int hw_json_simd_sse4_2_enabled() {
-#ifdef __BMI2__
+#ifdef __SSE4_2__
   return 1;
 #else
   return 0;

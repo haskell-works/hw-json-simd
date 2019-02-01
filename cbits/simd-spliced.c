@@ -153,6 +153,7 @@ size_t hw_json_simd_write_bp_chunk(
     size_t ib_bytes,
     hw_json_simd_bp_state_t *bp_state,
     uint8_t *out_buffer) {
+#if defined(__BMI2__)
   uint64_t *w64_result_ib = (uint64_t *)result_ib;
   uint64_t *w64_result_a  = (uint64_t *)result_a;
   uint64_t *w64_result_z  = (uint64_t *)result_z;
@@ -217,11 +218,17 @@ size_t hw_json_simd_write_bp_chunk(
   (*bp_state).remainder_len     = remainder_len;
 
   return w64s_ready;
+#else
+  fprintf(stderr, "Invalid call to hw_json_simd_write_bp_chunk: Require -mbmi2 flag to be defined");
+  exit(1);
+  return -1;
+#endif//defined(__BMI2__)
 }
 
 size_t hw_json_simd_write_bp_chunk_final(
     hw_json_simd_bp_state_t *bp_state,
     uint8_t *out_buffer) {
+#if defined(__BMI2__)
   uint64_t *w64_work_bp   = (uint64_t *)out_buffer;
 
   uint64_t  remainder_bits_d  = (*bp_state).remainder_bits_d;
@@ -249,6 +256,11 @@ size_t hw_json_simd_write_bp_chunk_final(
   w64s_ready += 1;
 
   return w64s_ready;
+#else
+  fprintf(stderr, "Invalid call to hw_json_simd_write_bp_chunk_final: Require -mbmi2 flag to be defined");
+  exit(1);
+  return -1;
+#endif//defined(__BMI2__)
 }
 
 uint8_t hw_json_simd_escape_mask[2][256] =
@@ -295,7 +307,7 @@ void hw_json_simd_summarise(
     uint32_t *out_mask_z,
     uint32_t *out_mask_q,
     uint32_t *out_mask_b) {
-#ifdef __AVX2__
+#if defined(__AVX2__)
   __m256i v_in_data = *(__m256i *)buffer;
   __m256i v_bytes_of_comma      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(','));
   __m256i v_bytes_of_colon      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(':'));
@@ -337,7 +349,8 @@ void hw_json_simd_summarise(
   out_w32_mask_b[0] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\\", 1, v_in_data_0, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
   out_w32_mask_b[1] = _mm_extract_epi16(_mm_cmpestrm(*(__m128i*)"\\", 1, v_in_data_1, 16, _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK), 0);
 #else
-#error "Require -mavx2 or -msse42 flags to be defined"
+  fprintf(stderr, "Invalid call to hw_json_simd_summarise: Require -mavx2 or -msse42 flags to be defined");
+  exit(1);
 #endif
 }
 
@@ -365,6 +378,7 @@ uint64_t hw_json_simd_process_chunk(
     uint8_t *result_ib,
     uint8_t *result_a,
     uint8_t *result_z) {
+#if defined(__BMI2__)
   size_t m256_in_len = in_length / 32;
   size_t w64_out_len = in_length / 64;
   size_t w8_out_len  = in_length / 8;
@@ -431,4 +445,9 @@ uint64_t hw_json_simd_process_chunk(
   }
 
   return accum;
+#else
+  fprintf(stderr, "Invalid call to hw_json_simd_process_chunk: Require -mbmi2 flag to be defined");
+  exit(1);
+  return -1;
+#endif//defined(__BMI2__)
 }

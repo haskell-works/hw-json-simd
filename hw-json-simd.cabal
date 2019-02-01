@@ -42,7 +42,7 @@ flag bmi2
 flag sse42
   description: Enable SSE 4.2 optimisations.
   manual: False
-  default: True
+  default: False
 
 common base                   { build-depends: base                 >= 4          && < 5      }
 common bytestring             { build-depends: bytestring           >= 0.10.6     && < 0.11   }
@@ -78,7 +78,6 @@ library
   autogen-modules:  Paths_hw_json_simd
   other-modules:    Paths_hw_json_simd
   hs-source-dirs:   src
-  cc-options:       -mssse3 -mlzcnt -mbmi2 -mavx2
   include-dirs:     cbits
   build-tools:      c2hs
   exposed-modules:
