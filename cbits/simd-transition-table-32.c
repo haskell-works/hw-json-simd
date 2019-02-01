@@ -1,5 +1,6 @@
+#include "intrinsics.h"
+
 #include <stdint.h>
-#include <immintrin.h>
 
 uint32_t hw_json_simd_transition_table_32[] =
   { 0x00010100, 0x00010100, 0x00010100, 0x00010100, 0x00010100, 0x00010100, 0x00010100, 0x00010100

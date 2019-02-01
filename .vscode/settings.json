@@ -4,6 +4,8 @@
     "cstddef": "c",
     "__functional_03": "c",
     "functional": "c",
-    "__locale": "c"
+    "__locale": "c",
+    "immintrin.h": "c",
+    "mmintrin.h": "c"
   }
 }

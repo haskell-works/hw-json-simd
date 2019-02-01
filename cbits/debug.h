@@ -1,7 +1,7 @@
-#include <immintrin.h>
-#include <mmintrin.h>
 #include <stdint.h>
 #include <stdio.h>
+
+#include "intrinsics.h"
 
 #if defined __AVX2__
 inline void hw_simd_json_fprint256_num(FILE *file, __m256i var) {

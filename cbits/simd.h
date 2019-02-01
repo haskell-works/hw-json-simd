@@ -1,5 +1,5 @@
-#include <immintrin.h>
-#include <mmintrin.h>
+#include "intrinsics.h"
+
 #include <stdint.h>
 #include <stdio.h>
 

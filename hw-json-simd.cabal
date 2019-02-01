@@ -17,6 +17,7 @@ tested-with:    GHC == 8.6.1, GHC == 8.4.3, GHC == 8.2.2, GHC == 7.10.3, GHC == 
 extra-source-files:
     cbits/debug.h
     cbits/simd.h
+    cbits/intrinsics.h
     cbits/simd.c
     cbits/simd-spliced.c
     cbits/simd-state.c

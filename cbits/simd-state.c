@@ -1,12 +1,11 @@
+#include "debug.h"
+#include "intrinsics.h"
+#include "simd.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <immintrin.h>
-
-#include "debug.h"
-
-#include "simd.h"
 
 void
 hw_json_simd_sm_process_chunk(

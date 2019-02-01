@@ -1,8 +1,9 @@
+#include "intrinsics.h"
 #include "simd.h"
 
 #include <stdio.h>
 #include <string.h>
-#include <immintrin.h>
+
 
 int hw_simd_json_sm_main(
     int argc,
