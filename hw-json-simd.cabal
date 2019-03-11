@@ -47,6 +47,10 @@ flag sse42
 
 common base                   { build-depends: base                 >= 4          && < 5      }
 common bytestring             { build-depends: bytestring           >= 0.10.6     && < 0.11   }
+common hedgehog               { build-depends: hedgehog             >= 0.5        && < 0.7    }
+common hspec                  { build-depends: hspec                >= 2.4        && < 3      }
+common hw-bits                { build-depends: hw-bits              >= 0.7.0.5    && < 0.8    }
+common hw-hspec-hedgehog      { build-depends: hw-hspec-hedgehog    >= 0.1.0.4    && < 0.2    }
 common hw-prim                { build-depends: hw-prim              >= 0.6.2.21   && < 0.7    }
 common lens                   { build-depends: lens                 >= 4          && < 5      }
 common optparse-applicative   { build-depends: optparse-applicative >= 0.14       && < 0.15   }
@@ -122,6 +126,10 @@ executable hw-json-simd
 test-suite hw-json-simd-test
   import:   base, config
           , bytestring
+          , hedgehog
+          , hspec
+          , hw-bits
+          , hw-hspec-hedgehog
           , hw-prim
           , lens
           , semigroups
@@ -131,6 +139,7 @@ test-suite hw-json-simd-test
   main-is:          Spec.hs
   autogen-modules:  Paths_hw_json_simd
   other-modules:    Paths_hw_json_simd
+                    HaskellWorks.Data.Json.Simd.Index.StandardSpec
   hs-source-dirs:   test
   ghc-options:      -threaded -rtsopts -with-rtsopts=-N
   build-depends:    hw-json-simd
