@@ -76,15 +76,9 @@ inline void hw_simd_json_print_bits_64(uint64_t v) {
 
 #if defined __AVX2__
 inline void hw_simd_json_print_bits_128(__m128i v) {
-  int i = 0;
-
-  for (i = 0; i < 2; ++i) {
-    if (i > 0) {
-      printf("-");
-    }
-
-    hw_simd_json_print_bits_64(_mm_extract_epi64(v, i));
-  }
+  hw_simd_json_print_bits_64(_mm_extract_epi64(v, 0));
+  printf("-");
+  hw_simd_json_print_bits_64(_mm_extract_epi64(v, 1));
 }
 #endif//__AVX2__
 
