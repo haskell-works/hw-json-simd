@@ -10,3 +10,4 @@ a.out
 *.txt
 .ghc.environment.*
 /cabal.project.local
+/.vscode/ipch
