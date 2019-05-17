@@ -13,7 +13,7 @@ copyright:      2018 - 2019 John Ky
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
-tested-with:    GHC == 8.6.3, GHC == 8.4.4, GHC == 8.2.2, GHC == 8.0.2
+tested-with:    GHC == 8.6.3, GHC == 8.4.4, GHC == 8.2.2
 extra-source-files:
     cbits/debug.h
     cbits/simd.h
