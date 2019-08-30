@@ -76,12 +76,12 @@ library
           , hw-prim
           , lens
           , vector
-  autogen-modules:  Paths_hw_json_simd
-  other-modules:    Paths_hw_json_simd
-  hs-source-dirs:   src
-  cc-options:       -mssse3 -mlzcnt -mbmi2 -mavx2
-  include-dirs:     cbits
-  build-tools:      c2hs
+  autogen-modules:      Paths_hw_json_simd
+  other-modules:        Paths_hw_json_simd
+  hs-source-dirs:       src
+  cc-options:           -mssse3 -mlzcnt -mbmi2 -mavx2
+  include-dirs:         cbits
+  build-tool-depends:   c2hs:c2hs
   exposed-modules:
       HaskellWorks.Data.Json.Simd.Capabilities
       HaskellWorks.Data.Json.Simd.Index.Simple
@@ -106,11 +106,11 @@ executable hw-json-simd
           , optparse-applicative
           , semigroups
           , vector
-  main-is:          Main.hs
-  autogen-modules:  Paths_hw_json_simd
-  hs-source-dirs:   app
-  build-depends:    hw-json-simd
-  ghc-options:      -threaded -rtsopts -with-rtsopts=-N
+  main-is:              Main.hs
+  autogen-modules:      Paths_hw_json_simd
+  hs-source-dirs:       app
+  build-depends:        hw-json-simd
+  ghc-options:          -threaded -rtsopts -with-rtsopts=-N
   other-modules:
       App.Commands
       App.Commands.Capabilities
@@ -127,10 +127,10 @@ test-suite hw-json-simd-test
           , semigroups
           , transformers
           , vector
-  type:             exitcode-stdio-1.0
-  main-is:          Spec.hs
-  autogen-modules:  Paths_hw_json_simd
-  other-modules:    Paths_hw_json_simd
-  hs-source-dirs:   test
-  ghc-options:      -threaded -rtsopts -with-rtsopts=-N
-  build-depends:    hw-json-simd
+  type:                 exitcode-stdio-1.0
+  main-is:              Spec.hs
+  autogen-modules:      Paths_hw_json_simd
+  other-modules:        Paths_hw_json_simd
+  hs-source-dirs:       test
+  ghc-options:          -threaded -rtsopts -with-rtsopts=-N
+  build-depends:        hw-json-simd
