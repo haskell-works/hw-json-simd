@@ -46,9 +46,11 @@ runCreateIndex opts = do
         contents <- LBS.resegmentPadded 512 <$> LBS.hGetContents hIn
         case makeStandardJsonIbBps contents of
           Right chunks -> do
+            IO.hPutStrLn IO.stderr $ "Index created, writing output files: "
             IO.withFile outputIbFile IO.WriteMode $ \hIb -> do
               IO.withFile outputBpFile IO.WriteMode $ \hBp -> do
                 forM_ chunks $ \(ibBs, bpBs) -> do
+                  IO.hPutStrLn IO.stderr $ "Chunk"
                   BS.hPut hIb ibBs
                   BS.hPut hBp bpBs
           Left msg -> do

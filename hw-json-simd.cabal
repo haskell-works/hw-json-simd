@@ -97,7 +97,7 @@ library
       cbits/simd-state.c
       cbits/simd-phi-table-32.c
       cbits/simd-transition-table-32.c
-  
+
 executable hw-json-simd
   import:   base, config
           , bytestring
