@@ -1,4 +1,5 @@
 #include "intrinsics.h"
+#include <stdint.h>
 
 __m256i hw_simd_json_transition_phi_wide_table[256] =
   { {0x0000000000010100, 0, 0x0000000000000000, 0}

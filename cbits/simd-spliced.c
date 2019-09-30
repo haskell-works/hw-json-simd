@@ -50,7 +50,10 @@ int hw_json_simd_main_spliced(
     exit(1);
   }
 
-  uint8_t buffer[W8_BUFFER_SIZE];
+  // align stack buffer on 32 bytes 
+  uint8_t unaligned_buffer[W8_BUFFER_SIZE + 32];
+  uint8_t * buffer = unaligned_buffer + ((uintptr_t)unaligned_buffer & (uintptr_t)0x10);
+  fprintf(stderr, "Buffer is at address %p of size %zu\n", buffer, (size_t) W8_BUFFER_SIZE);
 
   uint8_t *bits_of_d = malloc(W32_BUFFER_SIZE); memset(bits_of_d, 0, W32_BUFFER_SIZE);
   uint8_t *bits_of_a = malloc(W32_BUFFER_SIZE); memset(bits_of_a, 0, W32_BUFFER_SIZE);
