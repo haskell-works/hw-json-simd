@@ -79,7 +79,9 @@ int hw_simd_json_sm_main(
   }
 
   uint8_t buffer[W8_BUFFER_SIZE];
-  uint32_t phi_buffer[W8_BUFFER_SIZE];
+
+  uint32_t unaligned_phi_buffer[W8_BUFFER_SIZE + 32];
+  uint32_t * phi_buffer = (uint32_t*) ((void*)unaligned_phi_buffer + ((uintptr_t)unaligned_phi_buffer & (uintptr_t)0x10));
 
   uint8_t ibs_buffer[W8_BUFFER_SIZE];
   uint8_t ops_buffer[W8_BUFFER_SIZE];
