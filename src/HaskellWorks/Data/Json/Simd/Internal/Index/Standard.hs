@@ -29,8 +29,8 @@ data WorkState = WorkState
 
 allocWorkBuffers :: Int -> IO WorkBuffers
 allocWorkBuffers n = do
-  fptr <- F.mallocForeignPtrBytes (3 * n)
-  let ptr = F.unsafeForeignPtrToPtr fptr
+  fptr <- F.mallocForeignPtrBytes (3 * n + 32)
+  let ptr = alignPtr (F.unsafeForeignPtrToPtr fptr) 32
   return WorkBuffers
     { workBuffersF = fptr
     , workBuffersP = ptr `F.plusPtr`  0
