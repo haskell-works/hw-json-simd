@@ -9,6 +9,7 @@ import Foreign
 import qualified Foreign                                      as F
 import qualified Foreign.ForeignPtr.Unsafe                    as F
 import qualified HaskellWorks.Data.Json.Simd.Internal.Foreign as F
+import qualified HaskellWorks.Foreign                         as F
 
 {-# ANN module ("HLint: ignore Reduce duplication"  :: String) #-}
 {-# ANN module ("HLint: ignore Redundant do"        :: String) #-}
@@ -29,8 +30,7 @@ data WorkState = WorkState
 
 allocWorkBuffers :: Int -> IO WorkBuffers
 allocWorkBuffers n = do
-  fptr <- F.mallocForeignPtrBytes (3 * n)
-  let ptr = F.unsafeForeignPtrToPtr fptr
+  (fptr, ptr) <- F.mallocForeignPtrBytesWithAlignedCastPtr 32 (3 * n)
   return WorkBuffers
     { workBuffersF = fptr
     , workBuffersP = ptr `F.plusPtr`  0
