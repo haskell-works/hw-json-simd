@@ -44,15 +44,20 @@ flag sse42
   manual: False
   default: True
 
-common base                   { build-depends: base                 >= 4          && < 5      }
-common bytestring             { build-depends: bytestring           >= 0.10.6     && < 0.11   }
-common hw-prim                { build-depends: hw-prim              >= 0.6.2.35   && < 0.7    }
-common lens                   { build-depends: lens                 >= 4          && < 5      }
-common optparse-applicative   { build-depends: optparse-applicative >= 0.14       && < 0.16   }
-common vector                 { build-depends: vector               >= 0.12       && < 0.13   }
+common base                     { build-depends: base                     >= 4          && < 5      }
+common bytestring               { build-depends: bytestring               >= 0.10.6     && < 0.11   }
+common doctest                  { build-depends: doctest                  >= 0.16.2     && < 0.17   }
+common doctest-discover         { build-depends: doctest-discover         >= 0.2        && < 0.3    }
+common hw-prim                  { build-depends: hw-prim                  >= 0.6.2.35   && < 0.7    }
+common lens                     { build-depends: lens                     >= 4          && < 5      }
+common optparse-applicative     { build-depends: optparse-applicative     >= 0.14       && < 0.16   }
+common vector                   { build-depends: vector                   >= 0.12       && < 0.13   }
 
 common semigroups     { if (!impl(ghc >= 8.0.1))  { build-depends: { semigroups   >= 0.8.4  && < 0.19 } } }
 common transformers   { if (!impl(ghc >= 8.0.1))  { build-depends: { transformers >= 0.4    && < 0.6  } } }
+
+common hw-json-simd
+  build-depends:        hw-json-simd
 
 common config
   ghc-options:          -Wall
@@ -130,3 +135,15 @@ test-suite hw-json-simd-test
   hs-source-dirs:       test
   ghc-options:          -threaded -rtsopts -with-rtsopts=-N
   build-depends:        hw-json-simd
+
+test-suite doctest
+  import:               base, config
+                      , doctest
+                      , doctest-discover
+                      , hw-json-simd
+  default-language:     Haskell2010
+  type:                 exitcode-stdio-1.0
+  ghc-options:          -threaded
+  main-is:              DoctestDriver.hs
+  HS-Source-Dirs:       doctest
+  build-tool-depends:   doctest-discover:doctest-discover

@@ -15,7 +15,7 @@ import qualified System.IO as IO
 {-# ANN module ("HLint: ignore Redundant do"        :: String) #-}
 
 runCapabilities :: () -> IO ()
-runCapabilities opts = do
+runCapabilities _ = do
   IO.putStrLn "Capabalities:"
   IO.putStrLn $ "  standard indexing: " <> show enabledMakeStandardJsonIbBps
   IO.putStrLn $ "  simple indexing: "   <> show enabledMakeSimpleJsonIbBps
