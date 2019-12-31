@@ -109,7 +109,6 @@ executable hw-json-simd
                       , semigroups
                       , vector
   main-is:              Main.hs
-  autogen-modules:      Paths_hw_json_simd
   hs-source-dirs:       app
   build-depends:        hw-json-simd
   ghc-options:          -threaded -rtsopts -with-rtsopts=-N
@@ -118,7 +117,6 @@ executable hw-json-simd
                         App.Commands.CreateIndex
                         App.Commands.Types
                         App.Lens
-                        Paths_hw_json_simd
 
 test-suite hw-json-simd-test
   import:               base, config
@@ -130,8 +128,6 @@ test-suite hw-json-simd-test
                       , vector
   type:                 exitcode-stdio-1.0
   main-is:              Spec.hs
-  autogen-modules:      Paths_hw_json_simd
-  other-modules:        Paths_hw_json_simd
   hs-source-dirs:       test
   ghc-options:          -threaded -rtsopts -with-rtsopts=-N
   build-depends:        hw-json-simd
