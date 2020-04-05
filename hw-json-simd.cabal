@@ -9,11 +9,11 @@ homepage:               https://github.com/haskell-works/hw-json-simd#readme
 bug-reports:            https://github.com/haskell-works/hw-json-simd/issues
 author:                 John Ky
 maintainer:             newhoggy@gmail.com
-copyright:              2018-2019 John Ky
+copyright:              2018-2020 John Ky
 license:                BSD-3-Clause
 license-file:           LICENSE
 build-type:             Simple
-tested-with:            GHC == 8.8.3, GHC == 8.6.3, GHC == 8.4.4, GHC == 8.2.2
+tested-with:            GHC == 8.8.3, GHC == 8.6.3, GHC == 8.4.4
 extra-source-files:     cbits/debug.h
                         cbits/simd.h
                         cbits/intrinsics.h
@@ -44,14 +44,15 @@ flag sse42
   manual: False
   default: True
 
-common base                     { build-depends: base                     >= 4          && < 5      }
-common bytestring               { build-depends: bytestring               >= 0.10.6     && < 0.11   }
-common doctest                  { build-depends: doctest                  >= 0.16.2     && < 0.17   }
-common doctest-discover         { build-depends: doctest-discover         >= 0.2        && < 0.3    }
-common hw-prim                  { build-depends: hw-prim                  >= 0.6.2.35   && < 0.7    }
-common lens                     { build-depends: lens                     >= 4          && < 5      }
-common optparse-applicative     { build-depends: optparse-applicative     >= 0.14       && < 0.16   }
-common vector                   { build-depends: vector                   >= 0.12       && < 0.13   }
+common base                       { build-depends: base                       >= 4.11       && < 5      }
+
+common bytestring                 { build-depends: bytestring                 >= 0.10.6     && < 0.11   }
+common doctest                    { build-depends: doctest                    >= 0.16.2     && < 0.17   }
+common doctest-discover           { build-depends: doctest-discover           >= 0.2        && < 0.3    }
+common hw-prim                    { build-depends: hw-prim                    >= 0.6.2.35   && < 0.7    }
+common lens                       { build-depends: lens                       >= 4          && < 5      }
+common optparse-applicative       { build-depends: optparse-applicative       >= 0.14       && < 0.16   }
+common vector                     { build-depends: vector                     >= 0.12       && < 0.13   }
 
 common semigroups     { if (!impl(ghc >= 8.0.1))  { build-depends: { semigroups   >= 0.8.4  && < 0.19 } } }
 common transformers   { if (!impl(ghc >= 8.0.1))  { build-depends: { transformers >= 0.4    && < 0.6  } } }
