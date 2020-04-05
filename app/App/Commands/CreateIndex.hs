@@ -9,7 +9,6 @@ import App.Commands.Types
 import Control.Lens
 import Control.Monad
 import Data.Maybe
-import Data.Semigroup                             ((<>))
 import HaskellWorks.Data.Json.Simd.Index.Simple
 import HaskellWorks.Data.Json.Simd.Index.Standard
 import Options.Applicative                        hiding (columns)

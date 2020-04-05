@@ -2,7 +2,6 @@ module App.Commands where
 
 import App.Commands.Capabilities
 import App.Commands.CreateIndex
-import Data.Semigroup            ((<>))
 import Options.Applicative
 
 commands :: Parser (IO ())
