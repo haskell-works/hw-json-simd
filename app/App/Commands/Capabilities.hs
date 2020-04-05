@@ -4,7 +4,6 @@ module App.Commands.Capabilities
   ( cmdCapabilities
   ) where
 
-import Data.Semigroup                             ((<>))
 import HaskellWorks.Data.Json.Simd.Index.Simple
 import HaskellWorks.Data.Json.Simd.Index.Standard
 import Options.Applicative                        hiding (columns)

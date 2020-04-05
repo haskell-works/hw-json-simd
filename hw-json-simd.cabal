@@ -52,10 +52,8 @@ common doctest-discover           { build-depends: doctest-discover           >=
 common hw-prim                    { build-depends: hw-prim                    >= 0.6.2.35   && < 0.7    }
 common lens                       { build-depends: lens                       >= 4          && < 5      }
 common optparse-applicative       { build-depends: optparse-applicative       >= 0.14       && < 0.16   }
+common transformers               { build-depends: transformers               >= 0.4        && < 0.6    }
 common vector                     { build-depends: vector                     >= 0.12       && < 0.13   }
-
-common semigroups     { if (!impl(ghc >= 8.0.1))  { build-depends: { semigroups   >= 0.8.4  && < 0.19 } } }
-common transformers   { if (!impl(ghc >= 8.0.1))  { build-depends: { transformers >= 0.4    && < 0.6  } } }
 
 common hw-json-simd
   build-depends:        hw-json-simd
@@ -107,7 +105,6 @@ executable hw-json-simd
                       , hw-prim
                       , lens
                       , optparse-applicative
-                      , semigroups
                       , vector
   main-is:              Main.hs
   hs-source-dirs:       app
@@ -124,7 +121,6 @@ test-suite hw-json-simd-test
                       , bytestring
                       , hw-prim
                       , lens
-                      , semigroups
                       , transformers
                       , vector
   type:                 exitcode-stdio-1.0
