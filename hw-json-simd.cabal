@@ -1,4 +1,4 @@
-cabal-version:  2.2
+cabal-version: 2.2
 
 name:                   hw-json-simd
 version:                0.1.0.4
@@ -13,7 +13,7 @@ copyright:              2018-2020 John Ky
 license:                BSD-3-Clause
 license-file:           LICENSE
 build-type:             Simple
-tested-with:            GHC == 8.8.3, GHC == 8.6.3, GHC == 8.4.4
+tested-with:            GHC == 8.10.1, GHC == 8.8.3, GHC == 8.6.5, GHC == 8.4.4
 extra-source-files:     cbits/debug.h
                         cbits/simd.h
                         cbits/intrinsics.h
