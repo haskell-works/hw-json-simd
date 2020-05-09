@@ -12,8 +12,8 @@ import qualified Foreign                                      as F
 import qualified Foreign.ForeignPtr.Unsafe                    as F
 import qualified HaskellWorks.Data.Json.Simd.Internal.Foreign as F
 
-{-# ANN module ("HLint: ignore Reduce duplication"  :: String) #-}
-{-# ANN module ("HLint: ignore Redundant do"        :: String) #-}
+{- HLINT ignore "Reduce duplication"  -}
+{- HLINT ignore "Redundant do"        -}
 
 data WorkBuffers = WorkBuffers
   { workBuffersP :: !(ForeignPtr F.UInt8)
