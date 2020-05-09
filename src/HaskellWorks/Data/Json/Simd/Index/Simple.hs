@@ -25,8 +25,8 @@ import qualified HaskellWorks.Data.Json.Simd.Internal.Foreign as F
 import qualified HaskellWorks.Data.Json.Simd.Internal.List    as L
 import qualified System.IO.Unsafe                             as IO
 
-{-# ANN module ("HLint: ignore Reduce duplication"  :: String) #-}
-{-# ANN module ("HLint: ignore Redundant do"        :: String) #-}
+{- HLINT ignore "Reduce duplication"  -}
+{- HLINT ignore "Redundant do"        -}
 
 makeSimpleJsonIbBps :: LBS.ByteString -> Either String [(BS.ByteString, BS.ByteString)]
 makeSimpleJsonIbBps lbs = if enabledMakeSimpleJsonIbBps

@@ -20,8 +20,8 @@ import qualified HaskellWorks.Data.ByteString.Lazy as LBS
 import qualified System.Exit                       as IO
 import qualified System.IO                         as IO
 
-{-# ANN module ("HLint: ignore Reduce duplication"  :: String) #-}
-{-# ANN module ("HLint: ignore Redundant do"        :: String) #-}
+{- HLINT ignore "Reduce duplication"  -}
+{- HLINT ignore "Redundant do"        -}
 
 runCreateIndex :: CreateIndexOptions -> IO ()
 runCreateIndex opts = do
