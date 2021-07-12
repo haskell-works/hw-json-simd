@@ -4,10 +4,15 @@
 #include <stdio.h>
 #include <string.h>
 
-
 int hw_simd_json_sm_main(
     int argc,
     char **argv);
+
+int hw_simd_json_sm_match_slow_main(
+    int argc,
+    char **argv);
+
+extern uint32_t hw_json_transition_table[][4];
 
 int main(
     int argc,
@@ -21,6 +26,8 @@ int main(
     hw_json_simd_main_spliced(argc - 1, argv + 1);
   } else if (strcmp(argv[1], "sm") == 0) {
     hw_simd_json_sm_main(argc - 1, argv + 1);
+  } else if (strcmp(argv[1], "sm-match-slow") == 0) {
+    hw_simd_json_sm_match_slow_main(argc - 1, argv + 1);
   } else {
     fprintf(stderr, "Unrecognised command: %s\n", argv[1]);
     exit(1);
@@ -161,6 +168,49 @@ int hw_simd_json_sm_main(
 
   fclose(in);
   fclose(ib_out);
+
+  return 0;
+}
+
+int hw_simd_json_sm_match_slow_main(
+    int argc,
+    char **argv) {
+  if (argc != 2) {
+    fprintf(stderr, "./a.out <input-file>\n");
+    exit(1);
+  }
+
+  char *in_filename     = argv[1];
+
+  FILE *in = fopen(in_filename, "r");
+
+  if (!in) {
+    fprintf(stderr, "Failed to open input file %s\n", in_filename);
+    exit(1);
+  }
+
+  uint8_t buffer[W8_BUFFER_SIZE];
+
+  uint32_t state = 0;
+
+  while (1) {
+    size_t bytes_read = fread(buffer, 1, W8_BUFFER_SIZE, in);
+
+    for (size_t i = 0; i < bytes_read; ++i) {
+      uint8_t b = buffer[i];
+      state = hw_json_transition_table[b][state];
+    }
+
+    if (bytes_read == 0) {
+      if (feof(in)) {
+        break;
+      }
+    }
+  }
+
+  fprintf(stderr, "Final state %u\n", state);
+
+  fclose(in);
 
   return 0;
 }
