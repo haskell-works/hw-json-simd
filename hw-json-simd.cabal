@@ -13,7 +13,7 @@ copyright:              2018-2021 John Ky
 license:                BSD-3-Clause
 license-file:           LICENSE
 build-type:             Simple
-tested-with:            GHC == 9.0.1, GHC == 8.10.7, GHC == 8.8.4, GHC == 8.6.5
+tested-with:            GHC == 9.2.2, GHC == 9.0.2, GHC == 8.10.7, GHC == 8.8.4, GHC == 8.6.5
 extra-source-files:     cbits/debug.h
                         cbits/simd.h
                         cbits/intrinsics.h
