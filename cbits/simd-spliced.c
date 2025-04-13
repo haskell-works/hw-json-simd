@@ -175,16 +175,20 @@ size_t hw_json_simd_write_bp_chunk(
 
     size_t pc_ib = __builtin_popcountll(w64_ib);
 
+    // Ignoring non interesting bits, get a bitmask of all delimiters and
+    // opens and closes.
     uint64_t ext_d = _pext_u64(~(w64_a | w64_z) , w64_ib);
     uint64_t ext_a = _pext_u64(w64_a            , w64_ib);
     uint64_t ext_z = _pext_u64(w64_z            , w64_ib);
 
+    // Merge with the remainder bits.  Extract bits need to be shifted
+    // to avoid cloberring the remainder bits.
     remainder_bits_d |= (ext_d << remainder_len);
     remainder_bits_a |= (ext_a << remainder_len);
     remainder_bits_z |= (ext_z << remainder_len);
 
     if (remainder_len + pc_ib >= 64) {
-      // Write full word
+      // Write full word because we have enough bits
       w64_work_bp[w64s_ready] =
         _pdep_u64(remainder_bits_a, 0x5555555555555555) |
         _pdep_u64(remainder_bits_a, 0xaaaaaaaaaaaaaaaa) |
@@ -203,7 +207,7 @@ size_t hw_json_simd_write_bp_chunk(
 
       w64s_ready += 1;
 
-      // Set up for next iteration
+      // Set up for next iteration the bits that didn't fit
       remainder_bits_d = ext_d >> (64 - remainder_len);
       remainder_bits_a = ext_a >> (64 - remainder_len);
       remainder_bits_z = ext_z >> (64 - remainder_len);
@@ -291,13 +295,20 @@ uint8_t hw_json_simd_escape_mask[2][256] =
     }
   };
 
+// Summarise the input buffer into masks that indicate characters that have bearing on how the
+// JSON fragment is structured.  Of these only ":,{}[]" are candidates to be interesting-bits.
+// However, not every such occurence is an interesting-bit because they may be inside a string
+// literal.  What makes this more complicated is that the string literal may itself contain
+// escaped characters.
+// This function generates the masks for the characters of interest so that a later stage may
+// using them to determine the interesting-bits.
 void hw_json_simd_summarise(
-    uint8_t *buffer,
-    uint32_t *out_mask_d,
-    uint32_t *out_mask_a,
-    uint32_t *out_mask_z,
-    uint32_t *out_mask_q,
-    uint32_t *out_mask_b) {
+    uint8_t *buffer,          // Input buffer of 32 bytes containing a JSON fragment
+    uint32_t *out_mask_d,     // Output buffer for receiving the mask for delimiter characters: ':,'
+    uint32_t *out_mask_a,     // Output buffer for receiving the mask of the opening character: '{['
+    uint32_t *out_mask_z,     // Output buffer for receiving the mask of the closing character: ']}'
+    uint32_t *out_mask_q,     // Output buffer for receiving the mask of the quote character: '"'
+    uint32_t *out_mask_b) {   // Output buffer for receiving the mask of the backslash character: '\'
 #ifdef __AVX2__
   __m256i v_in_data = *(__m256i *)buffer;
   __m256i v_bytes_of_comma      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(','));
@@ -344,6 +355,11 @@ void hw_json_simd_summarise(
 #endif
 }
 
+// Add two words 'a' and 'b' and a carry bit 'c' together.
+// Detect this three-way addition overflow and set the carry bit accordingly in 'c'.
+// A utility function that can be used to add two arbitrary bit strings of the same length together.
+// The function itself doesn't peform the entire addition, but only word-wise in a way that propagates
+// the carry.
 uint64_t hw_json_simd_bitwise_add(uint64_t a, uint64_t b, uint64_t *c) {
   uint64_t d = a + b + *c;
 
@@ -394,13 +410,15 @@ uint64_t hw_json_simd_process_chunk(
 
   for (size_t i = 0; i < m256_in_len; ++i) {
     hw_json_simd_summarise(in_buffer + (i * 32),
-      w32_bits_of_d + i,
-      w32_bits_of_a + i,
-      w32_bits_of_z + i,
-      w32_bits_of_q + i,
-      w32_bits_of_b + i);
+      w32_bits_of_d + i,  // Mask of delimiter characters ':,'
+      w32_bits_of_a + i,  // Mask of opening characters '{['
+      w32_bits_of_z + i,  // Mask of closing characters ']}'
+      w32_bits_of_q + i,  // Mask of quote characters '"'
+      w32_bits_of_b + i); // Mask of backslash characters '\'
   }
 
+  // Generate an escape mask that can tell us which quote characters are escaped
+  // and which are not.
   for (size_t i = 0; i < w8_out_len; ++i) {
     char w8 = w8_bits_of_b[i];
     size_t j = (*last_trailing_ones) % 2;
@@ -411,22 +429,45 @@ uint64_t hw_json_simd_process_chunk(
   }
 
   for (size_t i = 0; i < w64_out_len; ++i) {
+    // Use the escape mask to remove the escaped quote characters from the quote mask
     w64_bits_of_q[i] = w64_bits_of_e[i] & w64_bits_of_q[i];
 
     uint64_t w64_bits_of_q_word = w64_bits_of_q[i];
 
-    uint64_t qas = _pdep_u64(0x5555555555555555 << ((*quote_odds_carry ) & 1), w64_bits_of_q_word);
-    uint64_t qzs = _pdep_u64(0x5555555555555555 << ((*quote_evens_carry) & 1), w64_bits_of_q_word);
+    // In the following, the bitmask 0x5555555555555555 has all the odd bits selected.  For example:
+    // 0101010101010101010101010101010101010101010101010101010101010101.
+    // Figure out which quote characters are open (qas) and which are closing quotes (qaz).
+    // Whether or not the quote is open or closed depends on if there has been unpaired
+    // quote carrying over from the previous fragment.
+    uint64_t qas = _pdep_u64(0x5555555555555555 << ((*quote_odds_carry ) & 1), w64_bits_of_q_word); // All the open quotes
+    uint64_t qzs = _pdep_u64(0x5555555555555555 << ((*quote_evens_carry) & 1), w64_bits_of_q_word); // All the closed quotes
 
+    // The quote mask tells us which characters are eligible to be interesting-bits (ie the ones not
+    // inside a string literal).
+
+    // Example:
+    //    input:              *"__"*""**"__""_ <- every character that is '*' is unquoted and _ is quoted
+    //    quote_mask_carry:   0
+    //    w64_bits_of_q_word: 0100101100100110
+    //    qas:                0100001000100010
+    //    qaz:                0000100100000100
+    //    ~qaz:               1111011011111011
+    //    quote_mask:         1000110111000100
+    //    input:              *"__"*""**"__""_ <- every character that is '*' is unquoted and _ is quoted
+    // In the above quote_mask and input, every * (unquoted) matches a 1 and every _ (quoted) matches a 0.
+    // We don't care about the rest of the bits because they correspond to quotes which cannot be
+    // interesting-bits.
     uint64_t quote_mask = hw_json_simd_bitwise_add(qas, ~qzs, quote_mask_carry);
 
+    // Only characters outside of string literals a eligible to be interesting-bits so the
+    // others are masked out.
     uint64_t w64_d = quote_mask & w64_bits_of_d[i];
     uint64_t w64_a = quote_mask & w64_bits_of_a[i];
     uint64_t w64_z = quote_mask & w64_bits_of_z[i];
 
-    w64_result_ib[i]  = w64_d | w64_a | w64_z;
-    w64_result_a[i]   = w64_a;
-    w64_result_z[i]   = w64_z;
+    w64_result_ib[i]  = w64_d | w64_a | w64_z;  // Interesting bits
+    w64_result_a[i]   = w64_a;                  // Opening characters
+    w64_result_z[i]   = w64_z;                  // Closing characters
 
     size_t pc = __builtin_popcountll(w64_bits_of_q[i]);
     *quote_odds_carry  += pc;
