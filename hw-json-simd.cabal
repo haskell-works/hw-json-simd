@@ -13,7 +13,7 @@ copyright:              2018-2021 John Ky
 license:                BSD-3-Clause
 license-file:           LICENSE
 build-type:             Simple
-tested-with:            GHC == 9.4.2, GHC == 9.2.4, GHC == 9.0.2, GHC == 8.10.7, GHC == 8.8.4, GHC == 8.6.5
+tested-with:            GHC == 9.12.2, GHC == 9.10.2, GHC == 9.8.4, GHC == 9.6.7
 extra-source-files:     cbits/debug.h
                         cbits/simd.h
                         cbits/intrinsics.h
@@ -47,7 +47,7 @@ flag sse42
 common base                       { build-depends: base                       >= 4.11       && < 5      }
 
 common bytestring                 { build-depends: bytestring                 >= 0.10.6     && < 0.13   }
-common doctest                    { build-depends: doctest                    >= 0.16.2     && < 0.23   }
+common doctest                    { build-depends: doctest                    >= 0.16.2     && < 1      }
 common doctest-discover           { build-depends: doctest-discover           >= 0.2        && < 0.3    }
 common hw-prim                    { build-depends: hw-prim                    >= 0.6.2.35   && < 0.7    }
 common lens                       { build-depends: lens                       >= 4          && < 6      }
