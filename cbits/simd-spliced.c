@@ -309,7 +309,7 @@ void hw_json_simd_summarise(
     uint32_t *out_mask_z,     // Output buffer for receiving the mask of the closing character: ']}'
     uint32_t *out_mask_q,     // Output buffer for receiving the mask of the quote character: '"'
     uint32_t *out_mask_b) {   // Output buffer for receiving the mask of the backslash character: '\'
-#ifdef __AVX2__
+#if defined(__AVX2__) || defined(HW_JSON_SIMD_NEON)
   __m256i v_in_data = *(__m256i *)buffer;
   __m256i v_bytes_of_comma      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(','));
   __m256i v_bytes_of_colon      = _mm256_cmpeq_epi8(v_in_data, _mm256_set1_epi8(':'));

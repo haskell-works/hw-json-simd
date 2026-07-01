@@ -1,5 +1,3 @@
-#include "intrinsics.h"
-
 #include <stdint.h>
 #include <stdio.h>
 
